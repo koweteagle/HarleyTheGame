@@ -54,7 +54,7 @@
 
         .rotate-message { font-size: 20px; padding: 20px; }
 
-        /* Algemene Overlay Styling (Start, Game Over, Level Up) */
+        /* Algemene Overlay Styling */
         .full-overlay {
             position: absolute; 
             top: 0; left: 0; 
@@ -150,7 +150,6 @@
             box-shadow: 0 6px 0 #800;
         }
 
-        /* Intro Afbeelding Schaling */
         .intro-image {
             max-width: 400px;
             width: 45%;
@@ -244,7 +243,6 @@
         
         #loading-text { color: var(--action-yellow); font-size: 18px; margin-top: 10px; }
 
-        /* Media Query voor zeer smalle landschapsmodus */
         @media screen and (max-height: 480px) {
             .full-overlay { padding: 10px; }
             #start-screen h1 { font-size: 20px; margin: 2px 0; }
@@ -310,7 +308,7 @@
         <h1>Harley the Game</h1>
         <p>Wij schijten allemaal op pec, pec, pec pec!</p>
         <div id="loading-text">Initialiseren...</div>
-        <div id="failed-assets-container"></div>
+        <div id="failed-assets-container" style="color: red; font-size: 11px; margin-top: 5px; max-width: 90%; text-align: center;"></div>
         <button id="start-btn" class="menu-btn" disabled>START MISSIE</button>
         <button id="info-btn" class="menu-btn">INFO</button>
     </div>
@@ -369,7 +367,7 @@
 
 <script>
     // --- 1. CONFIGURATIE & GLOBALE STATE ---
-    const BACKGROUND_URL = 'assets/bg2.jpg'; // Gewijzigd naar bg2.jpg
+    const BACKGROUND_URL = 'assets/bg2.jpg'; 
     const LEVEL_START_AUDIO_URL = 'audio/music.mp3';
     const LEVEL_WIN_AUDIO_URL = 'audio/forza eagles.wav';
     const LEVEL_GAMEOVER_AUDIO_URL = 'audio/always look.wav'; 
@@ -421,27 +419,27 @@
     const assets = {
         background: { src: BACKGROUND_URL, canvas: document.createElement('canvas'), loaded: false, label: 'Achtergrond' },
         eagleIntro: { src: 'https://i.ibb.co/N2bCS02z/eagle-intro.png', canvas: document.createElement('canvas'), loaded: false, label: 'Intro Adelaar' },
-        eagle: { src: 'https://i.ibb.co/3yCy3fMz/eagle3.png', canvas: document.createElement('canvas'), loaded: false, label: 'Adelaar' },
-        normal: { src: 'https://i.ibb.co/R49JydvK/pecsup1ren-1.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter 1' },
-        normalHit: { src: 'https://i.ibb.co/qLk7zYTC/pecsup1lig-1.png', canvas: document.createElement('canvas'), loaded: false, label: 'Geraakt 1' },
-        normal2: { src: 'https://i.ibb.co/Vs2x9yn/sup2ren.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter 2' },
-        normalHit2: { src: 'https://i.ibb.co/Kcgvwyyc/sup4-down.png', canvas: document.createElement('canvas'), loaded: false, label: 'Geraakt 2' },
-        hooli: { src: 'https://i.ibb.co/GN682DN/pechooli-rent.png', canvas: document.createElement('canvas'), loaded: false, label: 'Hooligan' },
-        hooliThrow: { src: 'https://i.ibb.co/FLgY3LnH/hooli-gooit.png', canvas: document.createElement('canvas'), loaded: false, label: 'Gooit' },
-        hooliHit: { src: 'https://i.ibb.co/tTGk8zFd/hc-sup-down.png', canvas: document.createElement('canvas'), loaded: false, label: 'Geraakt Hooli' },
-        boss1: { src: 'https://i.ibb.co/YvWhjtH/masc-rent.png', canvas: document.createElement('canvas'), loaded: false, name: "Zwolfje", label: 'Boss 1' },
-        boss1Throw: { src: 'https://i.ibb.co/DDjz2pWT/zwolfgooit.png', canvas: document.createElement('canvas'), loaded: false, label: 'Boss 1 Gooit' },
-        boss1Down: { src: 'https://i.ibb.co/yFVpX5nr/zwolfje-down.png', canvas: document.createElement('canvas'), loaded: false, label: 'Boss 1 Down' },
-        boss2: { src: 'https://i.ibb.co/S7nkTd7r/boer1.png', canvas: document.createElement('canvas'), loaded: false, name: "Diederik", label: 'Boss 2' },
-        boss2Throw: { src: 'https://i.ibb.co/S7RYM7P8/diedgooit.png', canvas: document.createElement('canvas'), loaded: false, label: 'Boss 2 Gooit' },
-        boss2Down: { src: 'https://i.ibb.co/fY2kkZTG/boer-down.png', canvas: document.createElement('canvas'), loaded: false, label: 'Boss 2 Down' },
-        boss3: { src: 'https://i.ibb.co/qFcNY0tF/bram1.png', canvas: document.createElement('canvas'), loaded: false, name: "Bram", label: 'Boss 3' },
-        boss3Throw: { src: 'https://i.ibb.co/ymy51PMy/bram-schiet.png', canvas: document.createElement('canvas'), loaded: false, label: 'Boss 3 Schiet' },
-        boss3Down: { src: 'https://i.ibb.co/KzRWQh2t/bram2.png', canvas: document.createElement('canvas'), loaded: false, label: 'Boss 3 Down' },
-        boss4: { src: 'https://i.ibb.co/fVxRmMfN/dom1.png', canvas: document.createElement('canvas'), loaded: false, name: "Dominguez", label: 'Boss 4' },
-        boss4Throw: { src: 'https://i.ibb.co/9mD0RWLt/domgooit.png', canvas: document.createElement('canvas'), loaded: false, label: 'Boss 4 Gooit' },
-        boss4Eat: { src: 'https://i.ibb.co/QjrWxVs4/domeet.png', canvas: document.createElement('canvas'), loaded: false, label: 'Boss 4 Eet' },
-        boss4Down: { src: 'https://i.ibb.co/x814frVg/dom2.png', canvas: document.createElement('canvas'), loaded: false, label: 'Boss 4 Down' }
+        eagle: { src: 'assets/eagle.png', canvas: document.createElement('canvas'), loaded: false, label: 'Adelaar' },
+        normal: { src: 'assets/pecsup1ren_1.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter 1' },
+        normalHit: { src: 'assets/pecsup1lig_1.png', canvas: document.createElement('canvas'), loaded: false, label: 'Geraakt 1' },
+        normal2: { src: 'assets/sup2ren.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter 2' },
+        normalHit2: { src: 'assets/sup4_down.png', canvas: document.createElement('canvas'), loaded: false, label: 'Geraakt 2' },
+        hooli: { src: 'assets/pechooli_rent.png', canvas: document.createElement('canvas'), loaded: false, label: 'Hooligan' },
+        hooliThrow: { src: 'assets/hooli_gooit.png', canvas: document.createElement('canvas'), loaded: false, label: 'Gooit' },
+        hooliHit: { src: 'assets/hc_sup_down.png', canvas: document.createElement('canvas'), loaded: false, label: 'Geraakt Hooli' },
+        boss1: { src: 'assets/masc_rent.png', canvas: document.createElement('canvas'), loaded: false, name: "Zwolfje", label: 'Boss 1' },
+        boss1Throw: { src: 'assets/zwolfgooit.png', canvas: document.createElement('canvas'), loaded: false, label: 'Boss 1 Gooit' },
+        boss1Down: { src: 'assets/zwolfje_down.png', canvas: document.createElement('canvas'), loaded: false, label: 'Boss 1 Down' },
+        boss2: { src: 'assets/boer1.png', canvas: document.createElement('canvas'), loaded: false, name: "Diederik", label: 'Boss 2' },
+        boss2Throw: { src: 'assets/diedgooit.png', canvas: document.createElement('canvas'), loaded: false, label: 'Boss 2 Gooit' },
+        boss2Down: { src: 'assets/boer down.png', canvas: document.createElement('canvas'), loaded: false, label: 'Boss 2 Down' },
+        boss3: { src: 'assets/bram1.png', canvas: document.createElement('canvas'), loaded: false, name: "Bram", label: 'Boss 3' },
+        boss3Throw: { src: 'assets/bram schiet.png', canvas: document.createElement('canvas'), loaded: false, label: 'Boss 3 Schiet' },
+        boss3Down: { src: 'assets/bram2.png', canvas: document.createElement('canvas'), loaded: false, label: 'Boss 3 Down' },
+        boss4: { src: 'assets/dom1.png', canvas: document.createElement('canvas'), loaded: false, name: "Dominguez", label: 'Boss 4' },
+        boss4Throw: { src: 'assets/domgooit.png', canvas: document.createElement('canvas'), loaded: false, label: 'Boss 4 Gooit' },
+        boss4Eat: { src: 'assets/domeet.png', canvas: document.createElement('canvas'), loaded: false, label: 'Boss 4 Eet' },
+        boss4Down: { src: 'assets/dom2.png', canvas: document.createElement('canvas'), loaded: false, label: 'Boss 4 Down' }
     };
 
     const bossDownMap = { boss1: 'boss1Down', boss2: 'boss2Down', boss3: 'boss3Down', boss4: 'boss4Down' };
@@ -454,13 +452,21 @@
             return new Promise((resolve) => {
                 const item = assets[key];
                 const img = new Image();
-                img.crossOrigin = "anonymous";
+                
+                if (item.src.startsWith('http')) {
+                    img.crossOrigin = "anonymous";
+                }
+                
                 const timeout = setTimeout(() => {
                     item.loaded = false; loadedCount++; addFailedAsset(item.label); updateLoadingBar(loadedCount, total); resolve();
-                }, 3000);
+                }, 10000); 
+
                 img.onload = () => {
-                    clearTimeout(timeout); item.canvas.width = img.width; item.canvas.height = img.height;
-                    const aCtx = item.canvas.getContext('2d'); aCtx.drawImage(img, 0, 0);
+                    clearTimeout(timeout); 
+                    item.canvas.width = img.width; 
+                    item.canvas.height = img.height;
+                    const aCtx = item.canvas.getContext('2d'); 
+                    aCtx.drawImage(img, 0, 0);
                     item.loaded = true; loadedCount++; updateLoadingBar(loadedCount, total); resolve();
                 };
                 img.onerror = () => {
@@ -484,8 +490,10 @@
     function addFailedAsset(label) {
         const container = document.getElementById('failed-assets-container');
         if (container) {
-            if (container.innerHTML === "") container.innerHTML = "<strong>Laden mislukt:</strong>";
-            const div = document.createElement('div'); div.innerText = "✖ " + label; container.appendChild(div);
+            if (container.innerHTML === "") container.innerHTML = "<strong>Fout bij laden van:</strong><br>";
+            const span = document.createElement('span'); 
+            span.innerText = "✖ " + label + " "; 
+            container.appendChild(span);
         }
     }
 
@@ -576,6 +584,8 @@
             poops.push({ x: px, y: py, radius: 12, speedY: 15, speedX: 0, type:'NORMAL' });
         }
     }
+
+    window.triggerSpecial = (type) => { if (player.activeWeapons[type] > 0) executePoop(type); };
 
     function updateBossUI() {
         const total = activeBosses.reduce((s, b) => s + Math.max(0, b.hp), 0);
@@ -743,8 +753,6 @@
     }
 
     function gameLoop(t) { if(!lastTime) lastTime = t; update(t - lastTime); lastTime = t; render(); }
-    
-    window.triggerSpecial = (type) => { if (player.activeWeapons[type] > 0) executePoop(type); };
 
     window.onkeydown = (e) => keys[e.code] = true; window.onkeyup = (e) => keys[e.code] = false;
     const moveJoystick = (input) => {
@@ -769,8 +777,8 @@
     bind('restart-btn', () => { score = 0; levelScoreStart = 0; currentLevel = 1; resetGame(); animationFrameId = requestAnimationFrame(gameLoop); });
     bind('continue-btn', () => { currentLevel++; levelScoreStart = score; resetGame(); animationFrameId = requestAnimationFrame(gameLoop); });
     bind('fire-btn', () => executePoop('NORMAL'));
-    bind('btn-DIARREE', () => triggerSpecial('DIARREE'));
-    bind('btn-POEPBOM', () => triggerSpecial('POEPBOM'));
+    bind('btn-DIARREE', () => window.triggerSpecial('DIARREE'));
+    bind('btn-POEPBOM', () => window.triggerSpecial('POEPBOM'));
     bind('info-btn', () => { document.getElementById('info-modal').style.display = 'flex'; });
     bind('close-info-btn', () => { document.getElementById('info-modal').style.display = 'none'; });
 
