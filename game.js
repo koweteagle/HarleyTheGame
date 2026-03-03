@@ -439,7 +439,6 @@ function render() {
         const sx = (worldStep * 0.5) % dw;
         ctx.drawImage(assets.background.canvas, -sx, 0, dw, VIRTUAL_HEIGHT); ctx.drawImage(assets.background.canvas, dw - sx, 0, dw, VIRTUAL_HEIGHT);
     }
-    ctx.fillStyle = '#555'; ctx.fillRect(0, VIRTUAL_HEIGHT - 50, (canvas.width/gameScale), 50);
     for(let t of targets) {
         ctx.save(); ctx.translate(t.x + (t.type==='hooligan'?75:65), VIRTUAL_HEIGHT - 50); 
         let sk = t.isHit ? (t.type === 'hooligan' ? 'hooliHit' : (t.variant === 2 ? 'normalHit2' : 'normalHit')) : (t.type === 'hooligan' ? (t.throwTimer > 70 ? 'hooliThrow' : 'hooli') : (t.variant === 2 ? 'normal2' : 'normal'));
