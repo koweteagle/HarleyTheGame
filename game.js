@@ -106,6 +106,10 @@ const assets = {
     background: { src: BACKGROUND_URL, canvas: document.createElement('canvas'), loaded: false, label: 'Achtergrond' },
     eagleIntro: { src: 'assets/eagle-intro.png', canvas: document.createElement('canvas'), loaded: false, label: 'Intro Adelaar' },
     eagle: { src: 'assets/eagle.png', canvas: document.createElement('canvas'), loaded: false, label: 'Adelaar' },
+    eagleAnim1: { src: 'assets/eagle_animatie_1.png', canvas: document.createElement('canvas'), loaded: false, label: 'Adelaar anim 1' },
+    eagleAnim2: { src: 'assets/eagle_animatie_2.png', canvas: document.createElement('canvas'), loaded: false, label: 'Adelaar anim 2' },
+    eagleAnim3: { src: 'assets/eagle_animatie_3.png', canvas: document.createElement('canvas'), loaded: false, label: 'Adelaar anim 3' },
+    eagleAnim4: { src: 'assets/eagle_animatie_4.png', canvas: document.createElement('canvas'), loaded: false, label: 'Adelaar anim 4' },
     normal: { src: 'assets/pecsup1ren_1.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter 1' },
     normalHit: { src: 'assets/pecsup1lig_1.png', canvas: document.createElement('canvas'), loaded: false, label: 'Geraakt 1' },
     normal2: { src: 'assets/sup2ren.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter 2' },
@@ -763,7 +767,11 @@ function render() {
     ctx.rotate(tilt);
     if (player.facing === -1) ctx.scale(-1, 1);
     if (player.isDead) ctx.rotate(Math.PI);
-    if (assets.eagle.loaded) drawTinted(assets.eagle.canvas, -player.width/2, -player.height/2, player.width, player.height, player.hitFlash);
+    const eagleAnimKeys = ['eagleAnim1', 'eagleAnim2', 'eagleAnim3', 'eagleAnim4'];
+    const isMoving = !player.isDead && (player.dx !== 0 || player.dy !== 0);
+    const frameIndex = Math.floor((Date.now() / 100) % 4);
+    const eagleAsset = player.isDead ? assets.eagle : (isMoving ? assets[eagleAnimKeys[frameIndex]] : assets.eagle);
+    if (eagleAsset && eagleAsset.loaded) drawTinted(eagleAsset.canvas, -player.width/2, -player.height/2, player.width, player.height, player.hitFlash);
     ctx.restore();
     ctx.restore();
     if(gameActive) animationFrameId = requestAnimationFrame(gameLoop);
