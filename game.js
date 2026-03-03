@@ -424,7 +424,10 @@ function update(dt) {
                 isHit: false,
                 variant: 1,
                 hitTime: 0,
-                throwTimer: 0
+                throwTimer: 0,
+                facing: 1,                                 // 1 = naar rechts kijkend, -1 = naar links
+                turnPhase: 0,                               // 0..1 voor omdraai-animatie
+                turning: false
             });
         } else {
             // Normale supporters: lopen van links naar rechts
@@ -455,15 +458,34 @@ function update(dt) {
                 // Hooligans: random links/rechts bewegen, plus wereld‑scroll
                 t.wanderTimer = (t.wanderTimer || 0) - 1;
                 if (t.wanderTimer <= 0) {
-                    // Kies nieuwe vx met voldoende snelheid t.o.v. world scroll
                     const base = BASE_WORLD_SPEED + 4;    // 10
                     const range = 4;                      // 10–14
                     const dir = Math.random() < 0.5 ? -1 : 1;
                     t.vx = dir * (base + Math.random() * range);
-                    t.wanderTimer = 40 + Math.random() * 60; // ~0.7–1.6 sec bij 60fps
+                    t.wanderTimer = 40 + Math.random() * 60; // ~0.7–1.6 sec
                 }
-
-                // Gooien: bestaande logica behouden
+            
+                // Richting bepalen o.b.v. vx
+                const desiredFacing = (t.vx || 0) >= 0 ? 1 : -1;
+            
+                // Start draai-animatie wanneer hij van richting wisselt
+                if (!t.turning && desiredFacing !== (t.facing || 1)) {
+                    t.turning = true;
+                    t.turnPhase = 0;        // 0 .. 1
+                    t.facing = desiredFacing;
+                }
+            
+                // Draai-animatie updaten
+                if (t.turning) {
+                    const TURN_FRAMES = 10;                 // duur van de draai
+                    t.turnPhase += 1 / TURN_FRAMES;
+                    if (t.turnPhase >= 1) {
+                        t.turnPhase = 1;
+                        t.turning = false;
+                    }
+                }
+            
+                // Gooien (jouw bestaande code)
                 if (t.throwTimer > 0) t.throwTimer--;
                 if (t.throwTimer <= 0 && Math.random() < 0.015) {
                     t.throwTimer = 100;
@@ -475,12 +497,12 @@ function update(dt) {
                         type: 'STONE'
                     });
                 }
-
+            
                 // Positie updaten
                 t.x += (t.vx || 0);
                 t.x -= currentEffectiveWorldSpeed;
-
-                // Binnen een horizontale marge laten “stuiteren”
+            
+                // Binnen marge laten stuiteren (zoals je al doet)
                 const leftLimit = -200;
                 const rightLimit = (canvas.width / gameScale) + 200;
                 if (t.x < leftLimit) {
@@ -528,10 +550,48 @@ function render() {
         const sx = (worldStep * 0.5) % dw;
         ctx.drawImage(assets.background.canvas, -sx, 0, dw, VIRTUAL_HEIGHT); ctx.drawImage(assets.background.canvas, dw - sx, 0, dw, VIRTUAL_HEIGHT);
     }
-    for(let t of targets) {
-        ctx.save(); ctx.translate(t.x + (t.type==='hooligan'?75:65), VIRTUAL_HEIGHT - 50); 
-        let sk = t.isHit ? (t.type === 'hooligan' ? 'hooliHit' : (t.variant === 2 ? 'normalHit2' : 'normalHit')) : (t.type === 'hooligan' ? (t.throwTimer > 70 ? 'hooliThrow' : 'hooli') : (t.variant === 2 ? 'normal2' : 'normal'));
-        if(assets[sk].loaded) ctx.drawImage(assets[sk].canvas, -(t.type==='hooligan'?75:65), -(t.type==='hooligan'?200:195), (t.type==='hooligan'?150:130), (t.type==='hooligan'?200:195)); ctx.restore();
+    for (let t of targets) {
+        const isHooligan = t.type === 'hooligan';
+        const halfW = isHooligan ? 75 : 65;
+        const fullH = isHooligan ? 200 : 195;
+    
+        // Basis-facing voor normale supporters: altijd naar rechts kijken
+        const baseFacing = isHooligan ? (t.facing || 1) : 1;
+    
+        // Omdraai-animatie: schaal in X van 1 → 0 → -1
+        let scaleX = baseFacing;
+        if (isHooligan && t.turning) {
+            // 0..1
+            const p = t.turnPhase || 0;
+            // cos-curve: 1 → 0 → -1 over π rad
+            const twist = Math.cos(p * Math.PI);
+            scaleX = baseFacing * twist;
+            // Let op: rond het midden (p≈0.5) is de sprite heel smal → lijkt alsof hij zijwaarts draait
+        }
+    
+        ctx.save();
+    
+        // Teken rond het midden van de sprite
+        ctx.translate(t.x + halfW, VIRTUAL_HEIGHT - 50);
+    
+        // Spiegelen
+        ctx.scale(scaleX, 1);
+    
+        let sk = t.isHit
+            ? (isHooligan ? 'hooliHit' : (t.variant === 2 ? 'normalHit2' : 'normalHit'))
+            : (isHooligan ? (t.throwTimer > 70 ? 'hooliThrow' : 'hooli') : (t.variant === 2 ? 'normal2' : 'normal'));
+    
+        if (assets[sk].loaded) {
+            ctx.drawImage(
+                assets[sk].canvas,
+                -halfW,          // vanaf midden naar links
+                -fullH,          // vanaf midden naar boven
+                halfW * 2,
+                fullH
+            );
+        }
+    
+        ctx.restore();
     }
     for(let b of activeBosses) {
         ctx.save(); ctx.translate(b.x + b.width/2, b.isHit ? VIRTUAL_HEIGHT - 50 : b.y + b.height/2); 
