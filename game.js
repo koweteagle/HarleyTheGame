@@ -102,8 +102,15 @@ const levelBossConfig = {
     8:['boss1','boss4','boss3'], 9:['boss2','boss3','boss4'], 10:['boss1','boss2','boss3','boss4']
 };
 
+const LEVEL_BG_KEYS = { 1: 'bg_level1', 2: 'bg_level2', 3: 'bg_level3', 4: 'bg_level4', 5: 'bg_level5', 6: 'bg_level4', 7: 'bg_level3', 8: 'bg_level2', 9: 'bg_level1', 10: 'background' };
+
 const assets = {
     background: { src: BACKGROUND_URL, canvas: document.createElement('canvas'), loaded: false, label: 'Achtergrond' },
+    bg_level1: { src: 'assets/bg_level1.png', canvas: document.createElement('canvas'), loaded: false, label: 'Achtergrond level 1' },
+    bg_level2: { src: 'assets/bg_level2.png', canvas: document.createElement('canvas'), loaded: false, label: 'Achtergrond level 2' },
+    bg_level3: { src: 'assets/bg_level3.png', canvas: document.createElement('canvas'), loaded: false, label: 'Achtergrond level 3' },
+    bg_level4: { src: 'assets/bg_level4.png', canvas: document.createElement('canvas'), loaded: false, label: 'Achtergrond level 4' },
+    bg_level5: { src: 'assets/bg_level5.png', canvas: document.createElement('canvas'), loaded: false, label: 'Achtergrond level 5' },
     eagleIntro: { src: 'assets/eagle-intro.png', canvas: document.createElement('canvas'), loaded: false, label: 'Intro Adelaar' },
     eagle: { src: 'assets/eagle.png', canvas: document.createElement('canvas'), loaded: false, label: 'Adelaar' },
     eagleAnim1: { src: 'assets/eagle_animatie_1.png', canvas: document.createElement('canvas'), loaded: false, label: 'Adelaar anim 1' },
@@ -667,10 +674,13 @@ function update(dt) {
 function render() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.save(); ctx.scale(gameScale, gameScale);
-    if(assets.background.loaded) {
-        const dw = VIRTUAL_HEIGHT * (assets.background.canvas.width / assets.background.canvas.height);
+    const bgKey = LEVEL_BG_KEYS[currentLevel] || 'background';
+    const bgAsset = assets[bgKey];
+    if (bgAsset && bgAsset.loaded) {
+        const dw = VIRTUAL_HEIGHT * (bgAsset.canvas.width / bgAsset.canvas.height);
         const sx = (worldStep * 0.5) % dw;
-        ctx.drawImage(assets.background.canvas, -sx, 0, dw, VIRTUAL_HEIGHT); ctx.drawImage(assets.background.canvas, dw - sx, 0, dw, VIRTUAL_HEIGHT);
+        ctx.drawImage(bgAsset.canvas, -sx, 0, dw, VIRTUAL_HEIGHT);
+        ctx.drawImage(bgAsset.canvas, dw - sx, 0, dw, VIRTUAL_HEIGHT);
     }
     for (let t of targets) {
         const isHooligan = t.type === 'hooligan';
