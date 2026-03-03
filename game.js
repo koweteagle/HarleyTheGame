@@ -416,8 +416,10 @@ function update(dt) {
                 type: 'hooligan',
                 x: -160,                                   // net buiten beeld links
                 y: spawnY,
-                speed: 2 + Math.random() * 1.5,           // basis: 2–3.5
-                vx: 3 + Math.random() * 2,                // start naar rechts, 3–5 px/frame
+                // basis voor hun eigen “max” bewegingssnelheid (niet te laag t.o.v. world scroll)
+                speed: 4 + Math.random() * 2,             // 4–6
+                // start stevig naar rechts zodat ze zeker in beeld komen
+                vx: BASE_WORLD_SPEED + 6,                 // 12 px/frame, wereld schuift ~6 naar links
                 wanderTimer: 0,                           // voor random richtingswissel
                 isHit: false,
                 variant: 1,
@@ -451,11 +453,13 @@ function update(dt) {
 
             } else if (t.type === 'hooligan') {
                 // Hooligans: random links/rechts bewegen, plus wereld‑scroll
-                const maxV = t.speed;                    // 2–3.5
                 t.wanderTimer = (t.wanderTimer || 0) - 1;
                 if (t.wanderTimer <= 0) {
-                    // Kies nieuwe vx tussen ongeveer -5 en +5
-                    t.vx = (Math.random() * 2 - 1) * (maxV * 1.6);
+                    // Kies nieuwe vx met voldoende snelheid t.o.v. world scroll
+                    const base = BASE_WORLD_SPEED + 4;    // 10
+                    const range = 4;                      // 10–14
+                    const dir = Math.random() < 0.5 ? -1 : 1;
+                    t.vx = dir * (base + Math.random() * range);
                     t.wanderTimer = 40 + Math.random() * 60; // ~0.7–1.6 sec bij 60fps
                 }
 
