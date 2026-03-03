@@ -220,12 +220,49 @@ function spawnBoss() {
     bossActive = true;
     const screenRight = (canvas.width / gameScale);
     const cfg = levelBossConfig[currentLevel] || ['boss1'];
+
+    // Bepaal lane-centers binnen het zichtbare gebied
+    const visibleWidth = canvas.width / gameScale;
+    const leftMargin = 150;                        // beetje van links af blijven
+    const rightMargin = 300;                       // ruimte rechts ivm baasbreedte
+    const leftX = leftMargin;
+    const rightX = visibleWidth - rightMargin;
+
+    const laneCount = cfg.length;
+    const laneCenters = cfg.map((_, i) => {
+        if (laneCount === 1) {
+            // Één baas: midden
+            return (leftX + rightX) / 2;
+        }
+        // Meerdere bazen: gelijkmatig tussen leftX en rightX
+        const t = i / (laneCount - 1);             // 0..1
+        return leftX + t * (rightX - leftX);
+    });
+
     activeBosses = cfg.map((t, i) => ({
-        type: t, x: screenRight + 100 + (i*350), y: 680, width: 250, height: 350,
-        hp: (25 + currentLevel*5) / (cfg.length*0.8), maxHp: (25 + currentLevel*5) / (cfg.length*0.8),
-        speed: 2.5, currentVx: -2.5, vxTimer: 0, isHit: false, hitFlash: 0, throwTimer: 45 + (i*15),
-        throwVisualTimer: 0, eatVisualTimer: 0, throwFlip: false, moveFlip: false, moveFlipTimer: 0
+        type: t,
+        x: screenRight + 100 + (i * 350),          // spawn blijft gelijk
+        y: 680,
+        width: 250,
+        height: 350,
+        hp: (25 + currentLevel * 5) / (cfg.length * 0.8),
+        maxHp: (25 + currentLevel * 5) / (cfg.length * 0.8),
+        speed: 2.5,
+        currentVx: -2.5,
+        vxTimer: 0,
+        isHit: false,
+        hitFlash: 0,
+        throwTimer: 45 + (i * 15),
+        throwVisualTimer: 0,
+        eatVisualTimer: 0,
+        throwFlip: false,
+        moveFlip: false,
+        moveFlipTimer: 0,
+
+        laneIndex: i,
+        targetX: laneCenters[i]                  // gewenste positie in beeld
     }));
+
     if (els.bossHealthContainer) els.bossHealthContainer.style.display = 'block';
     updateBossUI();
 }
@@ -526,15 +563,71 @@ function update(dt) {
         }
     }
     activeBosses.forEach((b) => {
-        b.x -= currentEffectiveWorldSpeed; if(!b.isHit) {
-            if(b.throwVisualTimer > 0) b.throwVisualTimer--; if(b.eatVisualTimer > 0) b.eatVisualTimer--;
-            b.vxTimer--; if (b.vxTimer <= 0) { b.currentVx = (Math.random() - 0.5) * 2 * b.speed; b.vxTimer = 40 + Math.random() * 80; }
-            b.x += b.currentVx; if (b.x < 50) { b.x = 50; b.currentVx *= -1; } if (b.x > (canvas.width/gameScale)-300) { b.x = (canvas.width/gameScale)-300; b.currentVx *= -1; }
-            if(b.throwTimer > 0) b.throwTimer--;
-            if(b.throwTimer <= 0) { 
-                b.throwTimer = 110; if(b.type === 'boss4' && Math.random() < 0.3) b.eatVisualTimer = 45; else b.throwVisualTimer = 35;
-                let pt = b.type === 'boss2' ? 'GLOVE' : (b.type === 'boss3' ? 'BALL' : (b.type === 'boss4' ? 'HAMBURGER' : 'STONE'));
-                if (!b.eatVisualTimer || b.eatVisualTimer <= 0) beerGlasses.push({ x: b.x+100, y: b.y + 100, vx: (player.x - b.x) * 0.02, vy: -25 - (Math.random() * 5), type: pt }); 
+        // Wereld scrollt naar links
+        b.x -= currentEffectiveWorldSpeed;
+    
+        if (!b.isHit) {
+            if (b.throwVisualTimer > 0) b.throwVisualTimer--;
+            if (b.eatVisualTimer > 0) b.eatVisualTimer--;
+    
+            // Bepaal horizontale snelheid richting targetX
+            const targetX = b.targetX ?? (canvas.width / gameScale) / 2;
+            const dx = targetX - b.x;
+    
+            // Kleine dode zone rond target zodat ze niet zenuwachtig worden
+            const deadZone = 40;
+    
+            b.vxTimer--;
+            if (b.vxTimer <= 0) {
+                if (Math.abs(dx) > deadZone) {
+                    // Loop gericht naar target, met een beetje willekeur
+                    const dir = dx > 0 ? 1 : -1;
+                    const base = b.speed * 1.5;                // iets sneller dan standaard
+                    const jitter = (Math.random() - 0.5) * b.speed;
+                    b.currentVx = dir * base + jitter;
+                } else {
+                    // In de buurt van target: kleine heen-en-weer shuffle
+                    b.currentVx = (Math.random() - 0.5) * b.speed;
+                }
+                b.vxTimer = 40 + Math.random() * 80;
+            }
+    
+            // Horizontale beweging toepassen
+            b.x += b.currentVx;
+    
+            // Binnen de grenzen van het scherm blijven
+            const minX = 50;
+            const maxX = (canvas.width / gameScale) - 300;
+            if (b.x < minX) {
+                b.x = minX;
+                b.currentVx = Math.abs(b.currentVx);
+            } else if (b.x > maxX) {
+                b.x = maxX;
+                b.currentVx = -Math.abs(b.currentVx);
+            }
+    
+            // Gooilogica blijft hetzelfde
+            if (b.throwTimer > 0) b.throwTimer--;
+            if (b.throwTimer <= 0) {
+                b.throwTimer = 110;
+                if (b.type === 'boss4' && Math.random() < 0.3) b.eatVisualTimer = 45;
+                else b.throwVisualTimer = 35;
+    
+                let pt = b.type === 'boss2'
+                    ? 'GLOVE'
+                    : (b.type === 'boss3'
+                        ? 'BALL'
+                        : (b.type === 'boss4' ? 'HAMBURGER' : 'STONE'));
+    
+                if (!b.eatVisualTimer || b.eatVisualTimer <= 0) {
+                    beerGlasses.push({
+                        x: b.x + 100,
+                        y: b.y + 100,
+                        vx: (player.x - b.x) * 0.02,
+                        vy: -25 - (Math.random() * 5),
+                        type: pt
+                    });
+                }
             }
         }
     });
