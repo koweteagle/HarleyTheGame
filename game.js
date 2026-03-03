@@ -405,14 +405,99 @@ function update(dt) {
         }
         if(hit) poops.splice(i, 1);
     }
-    if(!bossActive && targets.length < 5 && Math.random() < 0.04) targets.push({ x: (canvas.width/gameScale) + 100, y: VIRTUAL_HEIGHT-200, speed: (1.5 + Math.random()*2), dir: -1, isHit: false, type: Math.random()<0.3?'hooligan':'normal', variant: Math.random()<0.5?1:2, hitTime: 0, throwTimer: 0 });
-    for(let i=targets.length-1; i>=0; i--) {
-        const t = targets[i]; let targetSpeed = (t.type === 'hooligan' && t.throwTimer > 70) ? 0 : t.speed; t.x -= (targetSpeed + currentEffectiveWorldSpeed);
-        if(t.type === 'hooligan' && !t.isHit) {
-            if(t.throwTimer > 0) t.throwTimer--;
-            if(t.throwTimer <= 0 && Math.random() < 0.015) { t.throwTimer = 100; beerGlasses.push({ x: t.x+50, y: VIRTUAL_HEIGHT-150, vx: (player.x - t.x) * 0.018, vy: -22 - (Math.random() * 5), type: 'STONE' }); }
+    // Spawn supporters / hooligans
+    if (!bossActive && targets.length < 5 && Math.random() < 0.04) {
+        const spawnY = VIRTUAL_HEIGHT - 200;
+        const isHooligan = Math.random() < 0.35;          // ~35% kans op hooligan
+
+        if (isHooligan) {
+            // Hooligans: komen links in beeld, gaan daarna zwabberen
+            targets.push({
+                type: 'hooligan',
+                x: -160,                                   // net buiten beeld links
+                y: spawnY,
+                speed: 2 + Math.random() * 1.5,           // basis: 2–3.5
+                vx: 3 + Math.random() * 2,                // start naar rechts, 3–5 px/frame
+                wanderTimer: 0,                           // voor random richtingswissel
+                isHit: false,
+                variant: 1,
+                hitTime: 0,
+                throwTimer: 0
+            });
+        } else {
+            // Normale supporters: lopen van links naar rechts
+            targets.push({
+                type: 'normal',
+                x: -160,                                   // net buiten beeld links
+                y: spawnY,
+                speed: 8 + Math.random() * 2,             // 8–10 px/frame → duidelijk naar rechts
+                isHit: false,
+                variant: Math.random() < 0.5 ? 1 : 2,
+                hitTime: 0,
+                throwTimer: 0
+            });
         }
-        if(t.isHit && Date.now() - t.hitTime > 3000) targets.splice(i,1); else if(t.x < -400) targets.splice(i,1);
+    }
+
+    // Beweging supporters / hooligans
+    for (let i = targets.length - 1; i >= 0; i--) {
+        const t = targets[i];
+
+        if (!t.isHit) {
+            if (t.type === 'normal') {
+                // Normale supporters: lopen links → rechts
+                t.x += t.speed;                  // eigen loopsnelheid naar rechts
+                t.x -= currentEffectiveWorldSpeed; // wereld schuift naar links
+
+            } else if (t.type === 'hooligan') {
+                // Hooligans: random links/rechts bewegen, plus wereld‑scroll
+                const maxV = t.speed;                    // 2–3.5
+                t.wanderTimer = (t.wanderTimer || 0) - 1;
+                if (t.wanderTimer <= 0) {
+                    // Kies nieuwe vx tussen ongeveer -5 en +5
+                    t.vx = (Math.random() * 2 - 1) * (maxV * 1.6);
+                    t.wanderTimer = 40 + Math.random() * 60; // ~0.7–1.6 sec bij 60fps
+                }
+
+                // Gooien: bestaande logica behouden
+                if (t.throwTimer > 0) t.throwTimer--;
+                if (t.throwTimer <= 0 && Math.random() < 0.015) {
+                    t.throwTimer = 100;
+                    beerGlasses.push({
+                        x: t.x + 50,
+                        y: VIRTUAL_HEIGHT - 150,
+                        vx: (player.x - t.x) * 0.018,
+                        vy: -22 - (Math.random() * 5),
+                        type: 'STONE'
+                    });
+                }
+
+                // Positie updaten
+                t.x += (t.vx || 0);
+                t.x -= currentEffectiveWorldSpeed;
+
+                // Binnen een horizontale marge laten “stuiteren”
+                const leftLimit = -200;
+                const rightLimit = (canvas.width / gameScale) + 200;
+                if (t.x < leftLimit) {
+                    t.x = leftLimit;
+                    t.vx = Math.abs(t.vx || 0);
+                } else if (t.x > rightLimit) {
+                    t.x = rightLimit;
+                    t.vx = -Math.abs(t.vx || 0);
+                }
+            }
+        } else {
+            // Geraakte targets blijven op de grond en schuiven mee met de wereld
+            t.x -= currentEffectiveWorldSpeed;
+        }
+
+        // Opruimen
+        if (t.isHit && Date.now() - t.hitTime > 3000) {
+            targets.splice(i, 1);
+        } else if (t.x < -600 || t.x > (canvas.width / gameScale) + 600) {
+            targets.splice(i, 1);
+        }
     }
     activeBosses.forEach((b) => {
         b.x -= currentEffectiveWorldSpeed; if(!b.isHit) {
