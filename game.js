@@ -436,8 +436,8 @@ function update(dt) {
         let isBossPhase = bossActive && !allBossesDefeated;
         let snackRoll = Math.random();
         let selectedSnack = snackRoll < 0.3? SNACKS[0] : (snackRoll < 0.6? SNACKS[1] : (snackRoll < 0.9? SNACKS[2] : SNACKS[3]));
-        if (isBossPhase) powerUps.push({ x: Math.random() * ((canvas.width / gameScale) - 200) + 100, y: 100 + Math.random() * 500, type: selectedSnack, speed: 0, lifespan: 450 });
-        else powerUps.push({ x: (canvas.width / gameScale) + 50, y: 100 + Math.random() * 500, type: selectedSnack, speed: 5 });
+        if (isBossPhase) powerUps.push({ x: Math.random() * ((canvas.width / gameScale) - 200) + 100, y: 100 + Math.random() * 500, type: selectedSnack, speed: 0, lifespan: 450, floatPhase: Math.random() * Math.PI * 2 });
+        else powerUps.push({ x: (canvas.width / gameScale) + 50, y: 100 + Math.random() * 500, type: selectedSnack, speed: 5, floatPhase: Math.random() * Math.PI * 2 });
     }
     for(let i=powerUps.length-1; i>=0; i--) {
         const p = powerUps[i]; p.x -= (p.speed + currentEffectiveWorldSpeed);
