@@ -562,11 +562,20 @@ window.addEventListener('load', () => {
 
     if (IS_DEBUG) {
         document.querySelectorAll('.debug-level-btn[data-level]').forEach((btn) => {
-            btn.addEventListener('pointerdown', (e) => {
+            const handler = (e) => {
                 e.preventDefault();
                 const lvl = Number(btn.getAttribute('data-level'));
                 if (Number.isFinite(lvl)) forceLevel(lvl);
-            }, { passive: false });
+            };
+
+            // Pointer event (where supported)
+            btn.addEventListener('pointerdown', handler, { passive: false });
+
+            // Fallback / extra safety for browsers zonder Pointer Events
+            btn.addEventListener('click', (e) => {
+                if (Date.now() - lastTouchTs < 600) return;
+                handler(e);
+            });
         });
     }
 }, { once: true });
