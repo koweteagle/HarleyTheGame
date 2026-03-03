@@ -763,7 +763,25 @@ function render() {
         ctx.restore();
     }
     for(let bg of beerGlasses) { ctx.font = '24px Arial'; ctx.textAlign = 'center'; ctx.fillText(bg.type === 'GLOVE' ? '🧤' : (bg.type === 'BALL' ? '⚽' : (bg.type === 'HAMBURGER' ? '🍔' : '🪨')), bg.x, bg.y); }
-    for(let p of powerUps) { ctx.font = '40px Arial'; ctx.textAlign = 'center'; ctx.fillText(p.type.icon, p.x, p.y); }
+
+    const t = Date.now() * 0.001;
+    for (const p of powerUps) {
+        const floatPhase = p.floatPhase ?? 0;
+        const drawY = p.y + Math.sin(t * 0.9 + floatPhase) * 12;
+        const bubbleR = 28;
+        ctx.beginPath();
+        ctx.arc(p.x, drawY, bubbleR, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(220, 240, 255, 0.35)';
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(180, 210, 255, 0.85)';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ctx.font = '36px Arial';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(p.type.icon, p.x, drawY);
+    }
+    
     for(let s of splats) { ctx.fillStyle = `rgba(92, 64, 51, ${s.life})`; ctx.beginPath(); ctx.arc(s.x, s.y, s.radius, 0, 7); ctx.fill(); }
     for(let p of poops) { ctx.font = `${p.radius * 2.5}px Arial`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('💩', p.x, p.y); }
     ctx.save();
