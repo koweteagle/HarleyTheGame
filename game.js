@@ -794,7 +794,7 @@ function render() {
     for(let s of splats) { ctx.fillStyle = `rgba(92, 64, 51, ${s.life})`; ctx.beginPath(); ctx.arc(s.x, s.y, s.radius, 0, 7); ctx.fill(); }
     for(let p of poops) { ctx.font = `${p.radius * 2.5}px Arial`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('💩', p.x, p.y); }
     ctx.save();
-    const t = Date.now() * 0.001;
+    
     const hoverY = player.isDead ? 0 : Math.sin(t * 0.8) * 8;
     const hoverX = player.isDead ? 0 : Math.cos(t * 0.5) * 4;
     ctx.translate(player.x + player.width / 2 + hoverX, player.y + player.height / 2 + hoverY);
