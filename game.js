@@ -593,10 +593,42 @@ function render() {
     
         ctx.restore();
     }
-    for(let b of activeBosses) {
-        ctx.save(); ctx.translate(b.x + b.width/2, b.isHit ? VIRTUAL_HEIGHT - 50 : b.y + b.height/2); 
-        let sk = b.isHit ? bossDownMap[b.type] : (b.throwVisualTimer > 0 ? b.type + 'Throw' : (b.eatVisualTimer > 0 ? 'boss4Eat' : b.type));
-        if(assets[sk].loaded) drawTinted(assets[sk].canvas, -b.width/2, -b.height/2, b.width, b.height, b.hitFlash); ctx.restore();
+    for (let b of activeBosses) {
+        ctx.save();
+    
+        // Centreer op de baas
+        ctx.translate(
+            b.x + b.width / 2,
+            b.isHit ? VIRTUAL_HEIGHT - 50 : b.y + b.height / 2
+        );
+    
+        // Bepaal looprichting op basis van currentVx
+        // (negatief = naar links, positief = naar rechts)
+        const movingRight = (b.currentVx || 0) > 0 && !b.isHit;
+    
+        if (movingRight) {
+            // Spiegel horizontaal rond het midden
+            ctx.scale(-1, 1);
+        }
+    
+        let sk = b.isHit
+            ? bossDownMap[b.type]
+            : (b.throwVisualTimer > 0
+                ? b.type + 'Throw'
+                : (b.eatVisualTimer > 0 ? 'boss4Eat' : b.type));
+    
+        if (assets[sk].loaded) {
+            drawTinted(
+                assets[sk].canvas,
+                -b.width / 2,
+                -b.height / 2,
+                b.width,
+                b.height,
+                b.hitFlash
+            );
+        }
+    
+        ctx.restore();
     }
     for(let bg of beerGlasses) { ctx.font = '24px Arial'; ctx.textAlign = 'center'; ctx.fillText(bg.type === 'GLOVE' ? '🧤' : (bg.type === 'BALL' ? '⚽' : (bg.type === 'HAMBURGER' ? '🍔' : '🪨')), bg.x, bg.y); }
     for(let p of powerUps) { ctx.font = '40px Arial'; ctx.textAlign = 'center'; ctx.fillText(p.type.icon, p.x, p.y); }
