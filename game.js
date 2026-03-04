@@ -773,12 +773,16 @@ function render() {
         }
     
         if (assets[sk].loaded) {
+            // supC_down is klein in de bron; schalen voor gelijke visuele grootte
+            const isSupCDown = (sk === 'supCDown');
+            const drawHalfW = isSupCDown ? halfW * 1.8 : halfW;
+            const drawFullH = isSupCDown ? fullH * 1.8 : fullH;
             ctx.drawImage(
                 assets[sk].canvas,
-                -halfW,          // vanaf midden naar links
-                -fullH,          // vanaf midden naar boven
-                halfW * 2,
-                fullH
+                -drawHalfW,
+                -drawFullH,
+                drawHalfW * 2,
+                drawFullH
             );
         }
     
