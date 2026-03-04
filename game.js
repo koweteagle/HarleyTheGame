@@ -127,10 +127,10 @@ const assets = {
     hooliRun2: { src: 'assets/hooligan2.png', canvas: document.createElement('canvas'), loaded: false, label: 'Hooligan run 2' },
     hooliRun3: { src: 'assets/hooligan3.png', canvas: document.createElement('canvas'), loaded: false, label: 'Hooligan run 3' },
     hooliRun4: { src: 'assets/hooligan4.png', canvas: document.createElement('canvas'), loaded: false, label: 'Hooligan run 4' },
-    hooliRun5: { src: 'assets/hooligan5.png', canvas: document.createElement('canvas'), loaded: false, label: 'Hooligan run 5' },
+    
     hooliRun6: { src: 'assets/hooligan6.png', canvas: document.createElement('canvas'), loaded: false, label: 'Hooligan run 6' },
     hooliRun7: { src: 'assets/hooligan7.png', canvas: document.createElement('canvas'), loaded: false, label: 'Hooligan run 7' },
-    hooliRun8: { src: 'assets/hooligan8.png', canvas: document.createElement('canvas'), loaded: false, label: 'Hooligan run 8' },
+
 
     // deze twee laat je staan:
     hooliThrow: { src: 'assets/hooli_gooit.png', canvas: document.createElement('canvas'), loaded: false, label: 'Gooit' },
@@ -156,10 +156,9 @@ const HOOLI_RUN_KEYS = [
     'hooliRun2',
     'hooliRun3',
     'hooliRun4',
-    'hooliRun5',
+  
     'hooliRun6',
-    'hooliRun7',
-    'hooliRun8'
+    'hooliRun7'
   ];
 
 const bossDownMap = { boss1: 'boss1Down', boss2: 'boss2Down', boss3: 'boss3Down', boss4: 'boss4Down' };
