@@ -745,7 +745,8 @@ function render() {
         ctx.save();
     
         // Teken rond het midden van de sprite
-        ctx.translate(t.x + halfW, t.isHit ? VIRTUAL_HEIGHT - 50 + 28 : VIRTUAL_HEIGHT - 50);
+        const hitYOffset = (t.isHit && t.variant === 3) ? 65 : (t.isHit ? 28 : 0);  // supC op de grond op stoep
+        ctx.translate(t.x + halfW, VIRTUAL_HEIGHT - 50 + hitYOffset);
     
         // Spiegelen
         ctx.scale(scaleX, 1);
