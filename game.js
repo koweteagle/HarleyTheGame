@@ -752,8 +752,8 @@ function render() {
                 if (t.throwTimer > 70) {
                     sk = 'hooliThrow';
                 } else {
-                    // simpele animatie op basis van worldStep
-                    const frameIndex = Math.floor(worldStep / 5) % HOOLI_RUN_KEYS.length;
+                    const animFps = 8; // aantal frames per seconde
+                    const frameIndex = Math.floor((Date.now() / 1000) * animFps) % HOOLI_RUN_KEYS.length;
                     sk = HOOLI_RUN_KEYS[frameIndex];
                 }
             } else {
