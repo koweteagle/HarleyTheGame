@@ -122,18 +122,18 @@ const assets = {
     normal2: { src: 'assets/sup2ren.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter 2' },
     normalHit2: { src: 'assets/sup4_down.png', canvas: document.createElement('canvas'), loaded: false, label: 'Geraakt 2' },
 
-    // vervang de oude hooli of zet deze blok in de buurt
-    hooliRun1: { src: 'assets/hooligan1.png', canvas: document.createElement('canvas'), loaded: false, label: 'Hooligan run 1' },
-    hooliRun2: { src: 'assets/hooligan2.png', canvas: document.createElement('canvas'), loaded: false, label: 'Hooligan run 2' },
-    hooliRun3: { src: 'assets/hooligan3.png', canvas: document.createElement('canvas'), loaded: false, label: 'Hooligan run 3' },
-    hooliRun4: { src: 'assets/hooligan4.png', canvas: document.createElement('canvas'), loaded: false, label: 'Hooligan run 4' },
-    
-    hooliRun6: { src: 'assets/hooligan6.png', canvas: document.createElement('canvas'), loaded: false, label: 'Hooligan run 6' },
-    hooliRun7: { src: 'assets/hooligan7.png', canvas: document.createElement('canvas'), loaded: false, label: 'Hooligan run 7' },
-
-
-    // deze twee laat je staan:
-    hooliThrow: { src: 'assets/hooli_gooit.png', canvas: document.createElement('canvas'), loaded: false, label: 'Gooit' },
+    // Hooligan: assets/hooligan — ren hooli1–5, gooi hooli1gooit–hooli6gooit
+    hooliRun1: { src: 'assets/hooligan/hooli1.png', canvas: document.createElement('canvas'), loaded: false, label: 'Hooligan run 1' },
+    hooliRun2: { src: 'assets/hooligan/hooli2.png', canvas: document.createElement('canvas'), loaded: false, label: 'Hooligan run 2' },
+    hooliRun3: { src: 'assets/hooligan/hooli3.png', canvas: document.createElement('canvas'), loaded: false, label: 'Hooligan run 3' },
+    hooliRun4: { src: 'assets/hooligan/hooli4.png', canvas: document.createElement('canvas'), loaded: false, label: 'Hooligan run 4' },
+    hooliRun5: { src: 'assets/hooligan/hooli5.png', canvas: document.createElement('canvas'), loaded: false, label: 'Hooligan run 5' },
+    hooliThrow1: { src: 'assets/hooligan/hooli1gooit.png', canvas: document.createElement('canvas'), loaded: false, label: 'Hooligan gooit 1' },
+    hooliThrow2: { src: 'assets/hooligan/hooli2gooit.png', canvas: document.createElement('canvas'), loaded: false, label: 'Hooligan gooit 2' },
+    hooliThrow3: { src: 'assets/hooligan/hooli3gooit.png', canvas: document.createElement('canvas'), loaded: false, label: 'Hooligan gooit 3' },
+    hooliThrow4: { src: 'assets/hooligan/hooli4gooit.png', canvas: document.createElement('canvas'), loaded: false, label: 'Hooligan gooit 4' },
+    hooliThrow5: { src: 'assets/hooligan/hooli5gooit.png', canvas: document.createElement('canvas'), loaded: false, label: 'Hooligan gooit 5' },
+    hooliThrow6: { src: 'assets/hooligan/hooli6gooit.png', canvas: document.createElement('canvas'), loaded: false, label: 'Hooligan gooit 6' },
     hooliHit:   { src: 'assets/hc_sup_down.png', canvas: document.createElement('canvas'), loaded: false, label: 'Geraakt Hooli' },
 
     boss1: { src: 'assets/masc_rent.png', canvas: document.createElement('canvas'), loaded: false, name: "Zwolfje", label: 'Boss 1' },
@@ -151,15 +151,8 @@ const assets = {
     boss4Down: { src: 'assets/dom2.png', canvas: document.createElement('canvas'), loaded: false, label: 'Boss 4 Down' }
 };
 
-const HOOLI_RUN_KEYS = [
- 
-    'hooliRun2',
-    'hooliRun3',
-    'hooliRun4',
-  
-   
- 
-  ];
+const HOOLI_RUN_KEYS = ['hooliRun1', 'hooliRun2', 'hooliRun3', 'hooliRun4', 'hooliRun5'];
+const HOOLI_THROW_KEYS = ['hooliThrow1', 'hooliThrow2', 'hooliThrow3', 'hooliThrow4', 'hooliThrow5', 'hooliThrow6'];
 
 const bossDownMap = { boss1: 'boss1Down', boss2: 'boss2Down', boss3: 'boss3Down', boss4: 'boss4Down' };
 
@@ -751,9 +744,10 @@ function render() {
         } else {
             if (isHooligan) {
                 if (t.throwTimer > 70) {
-                    sk = 'hooliThrow';
+                    const throwFrame = Math.min(5, Math.floor((100 - t.throwTimer) / 5));
+                    sk = HOOLI_THROW_KEYS[throwFrame];
                 } else {
-                    const animFps = 8; // aantal frames per seconde
+                    const animFps = 8;
                     const frameIndex = Math.floor((Date.now() / 1000) * animFps) % HOOLI_RUN_KEYS.length;
                     sk = HOOLI_RUN_KEYS[frameIndex];
                 }
