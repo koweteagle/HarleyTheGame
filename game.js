@@ -121,9 +121,21 @@ const assets = {
     normalHit: { src: 'assets/pecsup1lig_1.png', canvas: document.createElement('canvas'), loaded: false, label: 'Geraakt 1' },
     normal2: { src: 'assets/sup2ren.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter 2' },
     normalHit2: { src: 'assets/sup4_down.png', canvas: document.createElement('canvas'), loaded: false, label: 'Geraakt 2' },
-    hooli: { src: 'assets/pechooli_rent.png', canvas: document.createElement('canvas'), loaded: false, label: 'Hooligan' },
+
+    // vervang de oude hooli of zet deze blok in de buurt
+    hooliRun1: { src: 'assets/hooligan1.png', canvas: document.createElement('canvas'), loaded: false, label: 'Hooligan run 1' },
+    hooliRun2: { src: 'assets/hooligan2.png', canvas: document.createElement('canvas'), loaded: false, label: 'Hooligan run 2' },
+    hooliRun3: { src: 'assets/hooligan3.png', canvas: document.createElement('canvas'), loaded: false, label: 'Hooligan run 3' },
+    hooliRun4: { src: 'assets/hooligan4.png', canvas: document.createElement('canvas'), loaded: false, label: 'Hooligan run 4' },
+    hooliRun5: { src: 'assets/hooligan5.png', canvas: document.createElement('canvas'), loaded: false, label: 'Hooligan run 5' },
+    hooliRun6: { src: 'assets/hooligan6.png', canvas: document.createElement('canvas'), loaded: false, label: 'Hooligan run 6' },
+    hooliRun7: { src: 'assets/hooligan7.png', canvas: document.createElement('canvas'), loaded: false, label: 'Hooligan run 7' },
+    hooliRun8: { src: 'assets/hooligan8.png', canvas: document.createElement('canvas'), loaded: false, label: 'Hooligan run 8' },
+
+    // deze twee laat je staan:
     hooliThrow: { src: 'assets/hooli_gooit.png', canvas: document.createElement('canvas'), loaded: false, label: 'Gooit' },
-    hooliHit: { src: 'assets/hc_sup_down.png', canvas: document.createElement('canvas'), loaded: false, label: 'Geraakt Hooli' },
+    hooliHit:   { src: 'assets/hc_sup_down.png', canvas: document.createElement('canvas'), loaded: false, label: 'Geraakt Hooli' },
+
     boss1: { src: 'assets/masc_rent.png', canvas: document.createElement('canvas'), loaded: false, name: "Zwolfje", label: 'Boss 1' },
     boss1Throw: { src: 'assets/zwolfgooit.png', canvas: document.createElement('canvas'), loaded: false, label: 'Boss 1 Gooit' },
     boss1Down: { src: 'assets/zwolfje_down.png', canvas: document.createElement('canvas'), loaded: false, label: 'Boss 1 Down' },
@@ -138,6 +150,17 @@ const assets = {
     boss4Eat: { src: 'assets/domeet.png', canvas: document.createElement('canvas'), loaded: false, label: 'Boss 4 Eet' },
     boss4Down: { src: 'assets/dom2.png', canvas: document.createElement('canvas'), loaded: false, label: 'Boss 4 Down' }
 };
+
+const HOOLI_RUN_KEYS = [
+    'hooliRun1',
+    'hooliRun2',
+    'hooliRun3',
+    'hooliRun4',
+    'hooliRun5',
+    'hooliRun6',
+    'hooliRun7',
+    'hooliRun8'
+  ];
 
 const bossDownMap = { boss1: 'boss1Down', boss2: 'boss2Down', boss3: 'boss3Down', boss4: 'boss4Down' };
 
@@ -718,9 +741,25 @@ function render() {
         // Spiegelen
         ctx.scale(scaleX, 1);
     
-        let sk = t.isHit
-            ? (isHooligan ? 'hooliHit' : (t.variant === 2 ? 'normalHit2' : 'normalHit'))
-            : (isHooligan ? (t.throwTimer > 70 ? 'hooliThrow' : 'hooli') : (t.variant === 2 ? 'normal2' : 'normal'));
+        let sk;
+
+        if (t.isHit) {
+            sk = isHooligan
+                ? 'hooliHit'
+                : (t.variant === 2 ? 'normalHit2' : 'normalHit');
+        } else {
+            if (isHooligan) {
+                if (t.throwTimer > 70) {
+                    sk = 'hooliThrow';
+                } else {
+                    // simpele animatie op basis van worldStep
+                    const frameIndex = Math.floor(worldStep / 5) % HOOLI_RUN_KEYS.length;
+                    sk = HOOLI_RUN_KEYS[frameIndex];
+                }
+            } else {
+                sk = (t.variant === 2 ? 'normal2' : 'normal');
+            }
+        }
     
         if (assets[sk].loaded) {
             ctx.drawImage(
