@@ -152,9 +152,14 @@ const assets = {
 };
 
 const HOOLI_RUN_KEYS = [
-    'hooliRun3', // linkerbeen voor
-    'hooliRun7'  // rechterbeen voor
-];
+    'hooliRun1',
+    'hooliRun2',
+    'hooliRun3',
+    'hooliRun4',
+  
+    'hooliRun6',
+    'hooliRun7'
+  ];
 
 const bossDownMap = { boss1: 'boss1Down', boss2: 'boss2Down', boss3: 'boss3Down', boss4: 'boss4Down' };
 
@@ -748,7 +753,7 @@ function render() {
                 if (t.throwTimer > 70) {
                     sk = 'hooliThrow';
                 } else {
-                    const animFps = 5; // aantal frames per seconde
+                    const animFps = 8; // aantal frames per seconde
                     const frameIndex = Math.floor((Date.now() / 1000) * animFps) % HOOLI_RUN_KEYS.length;
                     sk = HOOLI_RUN_KEYS[frameIndex];
                 }
