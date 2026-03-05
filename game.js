@@ -130,9 +130,9 @@ const BOSS_SPEEDS = {
 const HOOLIGAN_CHANCE_LEVEL1 = 0.2;   // kans hooligan op level 1 (0.2 = 20% hooligan, 80% normaal)
 const HOOLIGAN_CHANCE_MAX = 0.85;     // max kans hooligan op hogere levels
 // Verhouding onder normale supporters: gewichten A : C : D (bijv. 80 : 20 : 20 → ~67% A, ~17% C, ~17% D)
-const SUP_A_SPAWN_WEIGHT = 80;
-const SUP_C_SPAWN_WEIGHT = 20;
-const SUP_D_SPAWN_WEIGHT = 20;
+const SUP_A_SPAWN_WEIGHT = 33;
+const SUP_C_SPAWN_WEIGHT = 34;
+const SUP_D_SPAWN_WEIGHT = 33;
 
 const LEVEL_BG_KEYS = { 1: 'bg_level1', 2: 'bg_level2', 3: 'bg_level3', 4: 'bg_level4', 5: 'bg_level5', 6: 'bg_level4', 7: 'bg_level3', 8: 'bg_level2', 9: 'bg_level1', 10: 'background' };
 
