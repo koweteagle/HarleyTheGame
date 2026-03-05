@@ -910,22 +910,27 @@ function render() {
             }
         }
     
-        if (assets[sk].loaded) {
+        // Fallback: als gekozen sup A-frame niet geladen is, gebruik een ander geladen sup A-frame
+        let drawSk = sk;
+        if (!assets[sk].loaded && SUP_ARENT_KEYS.includes(sk)) {
+            drawSk = SUP_ARENT_KEYS.find(k => assets[k].loaded) || sk;
+        }
+        if (assets[drawSk].loaded) {
             let sizeScaleX = 1, sizeScaleY = 1;
-            if (sk === 'normalHit') {
+            if (drawSk === 'normalHit') {
                 sizeScaleX = SUP_A_HIT_SCALE_X; sizeScaleY = SUP_A_HIT_SCALE_Y;
-            } else if (sk === 'supCDown') {
+            } else if (drawSk === 'supCDown') {
                 sizeScaleX = SUP_C_HIT_SCALE_X; sizeScaleY = SUP_C_HIT_SCALE_Y;
-            } else if (sk === 'supDDown') {
+            } else if (drawSk === 'supDDown') {
                 sizeScaleX = SUP_D_HIT_SCALE_X; sizeScaleY = SUP_D_HIT_SCALE_Y;
-            } else if (sk === 'hooliHit') {
+            } else if (drawSk === 'hooliHit') {
                 sizeScaleX = HOOLI_HIT_SCALE_X; sizeScaleY = HOOLI_HIT_SCALE_Y;
             } else {
-                if (SUP_ARENT_KEYS.includes(sk)) {
+                if (SUP_ARENT_KEYS.includes(drawSk)) {
                     sizeScaleX = SUP_A_SCALE_X; sizeScaleY = SUP_A_SCALE_Y;
-                } else if (SUP_C_KEYS.includes(sk)) {
+                } else if (SUP_C_KEYS.includes(drawSk)) {
                     sizeScaleX = SUP_C_SCALE_X; sizeScaleY = SUP_C_SCALE_Y;
-                } else if (SUP_D_KEYS.includes(sk)) {
+                } else if (SUP_D_KEYS.includes(drawSk)) {
                     sizeScaleX = SUP_D_SCALE_X; sizeScaleY = SUP_D_SCALE_Y;
                 } else if (isHooligan) {
                     sizeScaleX = HOOLI_SCALE_X; sizeScaleY = HOOLI_SCALE_Y;
@@ -934,7 +939,7 @@ function render() {
             const drawHalfW = halfW * sizeScaleX;
             const drawFullH = fullH * sizeScaleY;
             ctx.drawImage(
-                assets[sk].canvas,
+                assets[drawSk].canvas,
                 -drawHalfW,
                 -drawFullH,
                 drawHalfW * 2,
