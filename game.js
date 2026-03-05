@@ -97,9 +97,10 @@ const SNACKS = [
 ];
 
 const levelBossConfig = {
-    1:['boss1'], 2:['boss2'], 3:['boss3'], 4:['boss4'],
-    5:['boss3','boss4'], 6:['boss1','boss2'], 7:['boss1','boss2','boss4'],
-    8:['boss1','boss4','boss3'], 9:['boss2','boss3','boss4'], 10:['boss1','boss2','boss3','boss4']
+    1: ['boss0'],
+    2: ['boss1'], 3: ['boss2'], 4: ['boss3'], 5: ['boss4'],
+    6: ['boss3','boss4'], 7: ['boss1','boss2'], 8: ['boss1','boss2','boss4'],
+    9: ['boss1','boss4','boss3'], 10: ['boss2','boss3','boss4'], 11: ['boss1','boss2','boss3','boss4']
 };
 
 // --- Snelheid-instellingen (makkelijk aanpasbaar) ---
@@ -119,6 +120,7 @@ const HOOLIGAN_VX_WORLD_OFFSET = 6;   // extra t.o.v. BASE_WORLD_SPEED voor vx
 
 // Eindbazen (per type een eigen loopsnelheid)
 const BOSS_SPEEDS = {
+    boss0: 2.5,
     boss1: 2.5,
     boss2: 2.5,
     boss3: 2.5,
@@ -134,7 +136,7 @@ const SUP_A_SPAWN_WEIGHT = 33;
 const SUP_C_SPAWN_WEIGHT = 34;
 const SUP_D_SPAWN_WEIGHT = 33;
 
-const LEVEL_BG_KEYS = { 1: 'bg_level1', 2: 'bg_level2', 3: 'bg_level3', 4: 'bg_level4', 5: 'bg_level5', 6: 'bg_level4', 7: 'bg_level3', 8: 'bg_level2', 9: 'bg_level1', 10: 'background' };
+const LEVEL_BG_KEYS = { 1: 'bg_level1', 2: 'bg_level2', 3: 'bg_level3', 4: 'bg_level4', 5: 'bg_level5', 6: 'bg_level4', 7: 'bg_level3', 8: 'bg_level2', 9: 'bg_level1', 10: 'background', 11: 'background' };
 
 const assets = {
     background: { src: BACKGROUND_URL, canvas: document.createElement('canvas'), loaded: false, label: 'Achtergrond' },
@@ -251,6 +253,9 @@ const assets = {
     hooliThrow6: { src: 'assets/hooligan/hooli6gooit.png', canvas: document.createElement('canvas'), loaded: false, label: 'Hooligan gooit 6' },
     hooliHit:   { src: 'assets/hc_sup_down.png', canvas: document.createElement('canvas'), loaded: false, label: 'Geraakt Hooli' },
 
+    boss0: { src: 'assets/clown/clownloopt/clownog-60 (gesleept).png', canvas: document.createElement('canvas'), loaded: false, name: "Clown", label: 'Boss 0 (Clown)' },
+    boss0Throw: { src: 'assets/clown/clowngooit/clownog-19 (gesleept).png', canvas: document.createElement('canvas'), loaded: false, label: 'Boss 0 Gooit' },
+    boss0Down: { src: 'assets/clown/clowndown/ezgif-189454d3ff861def-1 (gesleept).png', canvas: document.createElement('canvas'), loaded: false, label: 'Boss 0 Down' },
     boss1: { src: 'assets/masc_rent.png', canvas: document.createElement('canvas'), loaded: false, name: "Zwolfje", label: 'Boss 1' },
     boss1Throw: { src: 'assets/zwolfgooit.png', canvas: document.createElement('canvas'), loaded: false, label: 'Boss 1 Gooit' },
     boss1Down: { src: 'assets/zwolfje_down.png', canvas: document.createElement('canvas'), loaded: false, label: 'Boss 1 Down' },
@@ -281,7 +286,7 @@ const SUP_D_SCALE_X = 1.7;
 const SUP_D_SCALE_Y = 1.2; 
 const HOOLI_SCALE_X = 1.2;
 const HOOLI_SCALE_Y = 1.2;
-const BOSS_SCALES = { boss1: 1, boss2: 1, boss3: 1, boss4: 1 };
+const BOSS_SCALES = { boss0: 1, boss1: 1, boss2: 1, boss3: 1, boss4: 1 };
 
 // --- Schaal geraakt-/down-afbeelding (aparte X,Y per type) ---
 const SUP_A_HIT_SCALE_X = 1.35;
@@ -293,7 +298,7 @@ const SUP_D_HIT_SCALE_Y = 1.2;
 const HOOLI_HIT_SCALE_X = 1.6;
 const HOOLI_HIT_SCALE_Y = 1.2;
 
-const bossDownMap = { boss1: 'boss1Down', boss2: 'boss2Down', boss3: 'boss3Down', boss4: 'boss4Down' };
+const bossDownMap = { boss0: 'boss0Down', boss1: 'boss1Down', boss2: 'boss2Down', boss3: 'boss3Down', boss4: 'boss4Down' };
 
 async function preload() {
     const keysList = Object.keys(assets);
@@ -394,7 +399,7 @@ function triggerHealVisual() {
 function spawnBoss() {
     bossActive = true;
     const screenRight = (canvas.width / gameScale);
-    const cfg = levelBossConfig[currentLevel] || ['boss1'];
+    const cfg = levelBossConfig[currentLevel] || ['boss0'];
 
     // Bepaal lane-centers binnen het zichtbare gebied
     const visibleWidth = canvas.width / gameScale;
@@ -644,7 +649,7 @@ function update(dt) {
     // Spawn supporters / hooligans: verhouding instelbaar via HOOLIGAN_CHANCE_* en SUP_*_SPAWN_WEIGHT
     if (!bossActive && targets.length < 5 && Math.random() < 0.04) {
         const spawnY = VIRTUAL_HEIGHT - 200;
-        const hooliganChance = Math.min(HOOLIGAN_CHANCE_MAX, HOOLIGAN_CHANCE_LEVEL1 + (currentLevel - 1) * ((HOOLIGAN_CHANCE_MAX - HOOLIGAN_CHANCE_LEVEL1) / 9));
+        const hooliganChance = Math.min(HOOLIGAN_CHANCE_MAX, HOOLIGAN_CHANCE_LEVEL1 + (currentLevel - 1) * ((HOOLIGAN_CHANCE_MAX - HOOLIGAN_CHANCE_LEVEL1) / 10));
         const isHooligan = Math.random() < hooliganChance;
 
         if (isHooligan) {
