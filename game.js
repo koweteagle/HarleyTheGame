@@ -104,8 +104,8 @@ const levelBossConfig = {
 
 // --- Snelheid-instellingen (makkelijk aanpasbaar) ---
 // Normale supporters (A, C en D)
-const SUP_NORMAL_BASE_SPEED = 5;      // basissnelheid
-const SUP_NORMAL_SPEED_RANGE = 6;     // extra random snelheid (0..range)
+const SUP_NORMAL_BASE_SPEED = 8;      // basissnelheid
+const SUP_NORMAL_SPEED_RANGE = 4;     // extra random snelheid (0..range)
 const SUP_A_SPEED_MULT = 0.5;         // factor voor supporter A (variant 1)
 const SUP_C_SPEED_MULT = 1.0;         // factor voor supporter C (variant 3)
 const SUP_D_SPEED_MULT = 1.25;        // factor voor supporter D (variant 4) – iets sneller
