@@ -1041,7 +1041,7 @@ function render() {
         const drawH = b.height * bossScale;
         const drawW = b.width * bossScale;
         // Voeten op de stoep (VIRTUAL_HEIGHT - 50); staand: onderkant sprite op stoep; down: liggend op stoep
-        const groundY = VIRTUAL_HEIGHT - 25;
+        const groundY = VIRTUAL_HEIGHT - 15;
         const centerY = b.isHit ? groundY - 45 : groundY - drawH / 2;
         ctx.translate(b.x + b.width / 2, centerY);
     
