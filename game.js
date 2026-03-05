@@ -127,7 +127,15 @@ const assets = {
     supC3: { src: 'assets/supC/supC3.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter C run 3' },
     supCDown: { src: 'assets/supC/supC_down.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter C geraakt' },
     normalHit: { src: 'assets/pecsup1lig_1.png', canvas: document.createElement('canvas'), loaded: false, label: 'Geraakt 1' },
-    groenSheet: { src: 'assets/supD/groen.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter D (groen) loop' },
+    groen1: { src: 'assets/supD/groen-1 (gesleept).png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter D run 1' },
+    groen2: { src: 'assets/supD/groen-2 (gesleept).png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter D run 2' },
+    groen3: { src: 'assets/supD/groen-3 (gesleept).png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter D run 3' },
+    groen4: { src: 'assets/supD/groen-4 (gesleept).png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter D run 4' },
+    groen5: { src: 'assets/supD/groen-5 (gesleept).png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter D run 5' },
+    groen6: { src: 'assets/supD/groen-6 (gesleept).png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter D run 6' },
+    groen7: { src: 'assets/supD/groen-7 (gesleept).png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter D run 7' },
+    groen8: { src: 'assets/supD/groen-8 (gesleept).png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter D run 8' },
+    groen9: { src: 'assets/supD/groen-9 (gesleept).png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter D run 9' },
     supDDown: { src: 'assets/supD/groen_down.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter D geraakt' },
 
     // Hooligan: assets/hooligan — ren hooli1–5, gooi hooli1gooit–hooli6gooit
@@ -163,7 +171,7 @@ const HOOLI_RUN_KEYS = ['hooliRun1', 'hooliRun2', 'hooliRun3', 'hooliRun4', 'hoo
 const HOOLI_THROW_KEYS = ['hooliThrow1', 'hooliThrow2', 'hooliThrow3', 'hooliThrow4', 'hooliThrow5', 'hooliThrow6'];
 const SUP_ARENT_KEYS = ['supArent1', 'supArent2', 'supArent3', 'supArent4', 'supArent5'];
 const SUP_C_KEYS = ['supC1', 'supC2', 'supC3'];
-const GROEN_FRAME_COUNT = 9;
+const SUP_D_KEYS = ['groen1', 'groen2', 'groen3', 'groen4', 'groen5', 'groen6', 'groen7', 'groen8', 'groen9'];
 
 const bossDownMap = { boss1: 'boss1Down', boss2: 'boss2Down', boss3: 'boss3Down', boss4: 'boss4Down' };
 
@@ -769,22 +777,8 @@ function render() {
                     const frameIndex = Math.floor(t.animTime || 0) % HOOLI_RUN_KEYS.length;
                     sk = HOOLI_RUN_KEYS[frameIndex];
                 }
-            } else if (t.variant === 4) {
-                // Supporter D (groen): 9-frame sprite sheet
-                if (assets.groenSheet.loaded) {
-                    const frameIndex = Math.floor(t.animTime || 0) % GROEN_FRAME_COUNT;
-                    const fw = assets.groenSheet.canvas.width / GROEN_FRAME_COUNT;
-                    const fh = assets.groenSheet.canvas.height;
-                    ctx.drawImage(
-                        assets.groenSheet.canvas,
-                        frameIndex * fw, 0, fw, fh,
-                        -halfW, -fullH, halfW * 2, fullH
-                    );
-                }
-                ctx.restore();
-                continue;
             } else {
-                const runKeys = t.variant === 3 ? SUP_C_KEYS : SUP_ARENT_KEYS;
+                const runKeys = t.variant === 4 ? SUP_D_KEYS : t.variant === 3 ? SUP_C_KEYS : SUP_ARENT_KEYS;
                 sk = runKeys[Math.floor(t.animTime || 0) % runKeys.length];
             }
         }
