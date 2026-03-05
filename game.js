@@ -305,61 +305,116 @@ const HOOLI_HIT_SCALE_Y = 1.2;
 
 const bossDownMap = { boss0: 'clownDown1', boss1: 'boss1Down', boss2: 'boss2Down', boss3: 'boss3Down', boss4: 'boss4Down' };
 
-async function preload() {
-    const keysList = Object.keys(assets);
-    const total = keysList.length;
+// Level-specifieke assets: per level de bg + alle bazen van dat level
+const BOSS_ASSET_KEYS = {
+    boss0: ['boss0', ...CLOWN_LOOP_KEYS, ...CLOWN_THROW_KEYS, ...CLOWN_DOWN_KEYS],
+    boss1: ['boss1', 'boss1Throw', 'boss1Down'],
+    boss2: ['boss2', 'boss2Throw', 'boss2Down'],
+    boss3: ['boss3', 'boss3Throw', 'boss3Down'],
+    boss4: ['boss4', 'boss4Throw', 'boss4Eat', 'boss4Down']
+};
+
+function getLevelAssetKeys(level) {
+    const bgKey = LEVEL_BG_KEYS[level] || 'background';
+    const bossTypes = levelBossConfig[level] || ['boss0'];
+    const bossKeys = [...new Set(bossTypes.flatMap(t => BOSS_ASSET_KEYS[t] || []))];
+    return [bgKey, ...bossKeys];
+}
+
+const LEVEL_SPECIFIC_KEYS = new Set();
+for (let l = 1; l <= 11; l++) getLevelAssetKeys(l).forEach(k => LEVEL_SPECIFIC_KEYS.add(k));
+
+const CORE_ASSET_KEYS = Object.keys(assets).filter(k => !LEVEL_SPECIFIC_KEYS.has(k));
+
+function loadAsset(key, options = {}) {
+    const { onProgress, totalForProgress, timeoutMs = 60000, silentFail = false } = options;
+    const item = assets[key];
+    if (!item || item.loaded) return Promise.resolve();
+    return new Promise((resolve) => {
+        const img = new Image();
+        if (item.src.startsWith('http')) img.crossOrigin = 'anonymous';
+        const silent = silentFail || key.startsWith('clownLoop') || key.startsWith('clownThrow') || key.startsWith('clownDown');
+        const timeout = setTimeout(() => {
+            item.loaded = false;
+            if (!silent) addFailedAsset(item.label);
+            if (onProgress) onProgress(key, totalForProgress);
+            resolve();
+        }, timeoutMs);
+        img.onload = () => {
+            clearTimeout(timeout);
+            try {
+                const maxSize = 2048;
+                let w = img.width, h = img.height;
+                if (w > maxSize || h > maxSize) {
+                    const scale = maxSize / Math.max(w, h);
+                    w = Math.round(w * scale);
+                    h = Math.round(h * scale);
+                }
+                item.canvas.width = w;
+                item.canvas.height = h;
+                const aCtx = item.canvas.getContext('2d');
+                aCtx.drawImage(img, 0, 0, img.width, img.height, 0, 0, w, h);
+                item.loaded = true;
+            } catch (e) {
+                item.loaded = false;
+                if (!silent) addFailedAsset(item.label);
+            }
+            if (onProgress) onProgress(key, totalForProgress);
+            resolve();
+        };
+        img.onerror = () => {
+            clearTimeout(timeout);
+            item.loaded = false;
+            if (!silent) addFailedAsset(item.label);
+            if (onProgress) onProgress(key, totalForProgress);
+            resolve();
+        };
+        img.src = item.src;
+    });
+}
+
+async function loadAssets(keys, options = {}) {
+    const toLoad = keys.filter(k => assets[k] && !assets[k].loaded);
+    if (toLoad.length === 0) return;
+    const total = toLoad.length;
+    let done = 0;
+    const onProgress = (k, t) => {
+        done++;
+        if (options.updateLoadingBar && t != null) updateLoadingBar(done, t);
+    };
+    const promises = toLoad.map(k => loadAsset(k, { ...options, onProgress, totalForProgress: total, timeoutMs: options.timeoutMs ?? 60000 }));
+    await Promise.all(promises);
+}
+
+async function preloadCore() {
+    const total = CORE_ASSET_KEYS.length;
     let loadedCount = 0;
     updateLoadingBar(0, total);
-    const promises = keysList.map(key => {
-        return new Promise((resolve) => {
-            const item = assets[key];
-            const img = new Image();
-                
-            if (item.src.startsWith('http')) {
-                img.crossOrigin = "anonymous";
-            }
-                
-            const timeout = setTimeout(() => {
-                item.loaded = false; loadedCount++;
-                if (!key.startsWith('clownLoop') && !key.startsWith('clownThrow') && !key.startsWith('clownDown')) addFailedAsset(item.label);
-                updateLoadingBar(loadedCount, total); resolve();
-            }, 60000); 
-
-            img.onload = () => {
-                clearTimeout(timeout);
-                try {
-                    const maxSize = 2048;
-                    let w = img.width, h = img.height;
-                    if (w > maxSize || h > maxSize) {
-                        const scale = maxSize / Math.max(w, h);
-                        w = Math.round(w * scale);
-                        h = Math.round(h * scale);
-                    }
-                    item.canvas.width = w;
-                    item.canvas.height = h;
-                    const aCtx = item.canvas.getContext('2d');
-                    aCtx.drawImage(img, 0, 0, img.width, img.height, 0, 0, w, h);
-                    item.loaded = true;
-                } catch (e) {
-                    item.loaded = false;
-                    if (!key.startsWith('clownLoop') && !key.startsWith('clownThrow') && !key.startsWith('clownDown')) addFailedAsset(item.label);
-                }
-                loadedCount++;
-                updateLoadingBar(loadedCount, total);
-                resolve();
-            };
-            img.onerror = () => {
-                clearTimeout(timeout); item.loaded = false; loadedCount++;
-                if (!key.startsWith('clownLoop') && !key.startsWith('clownThrow') && !key.startsWith('clownDown')) addFailedAsset(item.label);
-                updateLoadingBar(loadedCount, total); resolve();
-            };
-            img.src = item.src;
-        });
+    await loadAssets(CORE_ASSET_KEYS, {
+        updateLoadingBar: true,
+        timeoutMs: 15000
     });
-    await Promise.all(promises);
-    if (assets.background.loaded) bgImg.src = assets.background.src;
+    loadedCount = CORE_ASSET_KEYS.filter(k => assets[k] && assets[k].loaded).length;
+    updateLoadingBar(loadedCount, total);
+    if (assets.background && assets.background.loaded) bgImg.src = assets.background.src;
     if (els.loadingText) els.loadingText.style.display = 'none';
     if (els.startBtn) els.startBtn.disabled = false;
+}
+
+async function loadLevelAssets(level) {
+    const keys = getLevelAssetKeys(level);
+    const toLoad = keys.filter(k => assets[k] && !assets[k].loaded);
+    if (toLoad.length === 0) return;
+    if (els.loadingText) {
+        els.loadingText.style.display = 'block';
+        els.loadingText.innerText = `Level ${level} laden...`;
+    }
+    await loadAssets(keys, { timeoutMs: 60000, silentFail: true });
+    if (els.loadingText) els.loadingText.style.display = 'none';
+}
+
+async function preload() {
+    await preloadCore();
 }
 
 function checkIOS() {
@@ -1143,14 +1198,24 @@ bind('start-btn', async () => {
     if(gameActive) return; 
     [levelAudio, winAudio, gameOverAudio].forEach(a => { a.play().then(() => { a.pause(); a.currentTime = 0; }).catch(() => {}); });
     await requestLandscape();
+    await loadLevelAssets(1);
     score = 0; levelScoreStart = 0; currentLevel = 1;
     if (els.startScreen) els.startScreen.style.display = 'none';
     resetGame();
     lastTime = 0;
     animationFrameId = requestAnimationFrame(gameLoop);
 });
-bind('restart-btn', () => { score = 0; levelScoreStart = 0; currentLevel = 1; resetGame(); lastTime = 0; animationFrameId = requestAnimationFrame(gameLoop); });
-bind('continue-btn', () => { currentLevel++; levelScoreStart = score; resetGame(); lastTime = 0; animationFrameId = requestAnimationFrame(gameLoop); });
+bind('restart-btn', async () => { 
+    score = 0; levelScoreStart = 0; currentLevel = 1; 
+    await loadLevelAssets(1); 
+    resetGame(); lastTime = 0; animationFrameId = requestAnimationFrame(gameLoop); 
+});
+bind('continue-btn', async () => { 
+    currentLevel++; 
+    levelScoreStart = score; 
+    await loadLevelAssets(currentLevel); 
+    resetGame(); lastTime = 0; animationFrameId = requestAnimationFrame(gameLoop); 
+});
 bind('fire-btn', () => executePoop('NORMAL'));
 bind('btn-DIARREE', () => window.triggerSpecial('DIARREE'));
 bind('btn-POEPBOM', () => window.triggerSpecial('POEPBOM'));
@@ -1158,8 +1223,9 @@ bind('info-btn', () => { if (els.infoModal) els.infoModal.style.display = 'flex'
 bind('close-info-btn', () => { if (els.infoModal) els.infoModal.style.display = 'none'; });
 bind('ios-later-btn', () => { if (els.iosModal) els.iosModal.style.display = 'none'; });
 
-function forceLevel(n) {
+async function forceLevel(n) {
     if (!IS_DEBUG) return;
+    await loadLevelAssets(n);
     currentLevel = n; 
     levelScoreStart = (n - 1) * POINTS_TO_BOSS;
     score = levelScoreStart + POINTS_TO_BOSS; 
@@ -1180,10 +1246,10 @@ window.addEventListener('load', () => {
 
     if (IS_DEBUG) {
         document.querySelectorAll('.debug-level-btn[data-level]').forEach((btn) => {
-            const handler = (e) => {
+            const handler = async (e) => {
                 e.preventDefault();
                 const lvl = Number(btn.getAttribute('data-level'));
-                if (Number.isFinite(lvl)) forceLevel(lvl);
+                if (Number.isFinite(lvl)) await forceLevel(lvl);
             };
 
             // Pointer event (where supported)
