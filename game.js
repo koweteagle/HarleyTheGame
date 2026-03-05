@@ -118,14 +118,17 @@ const HOOLIGAN_SPEEDMULT_MIN = 0.65;  // minimale individuele multiplier
 const HOOLIGAN_SPEEDMULT_MAX = 1.35;  // maximale individuele multiplier
 const HOOLIGAN_VX_WORLD_OFFSET = 6;   // extra t.o.v. BASE_WORLD_SPEED voor vx
 
-// Eindbazen (per type een eigen loopsnelheid)
-const BOSS_SPEEDS = {
-    boss0: 2.5,
-    boss1: 2.5,
-    boss2: 2.5,
-    boss3: 2.5,
-    boss4: 2.5
+// Eindbazen: per type alle instellingen op één plek (hoogte, grootte, snelheid, etc.)
+const BOSS_CONFIG = {
+    boss0: { width: 250, height: 350, scale: 1.7, speed: 2.5, downOffset: 45, mirrorFlip: true },
+    boss1: { width: 250, height: 350, scale: 1,   speed: 2.5, downOffset: 45, mirrorFlip: false },
+    boss2: { width: 250, height: 350, scale: 1,   speed: 2.5, downOffset: 45, mirrorFlip: false },
+    boss3: { width: 250, height: 350, scale: 1,   speed: 2.5, downOffset: 45, mirrorFlip: false },
+    boss4: { width: 250, height: 350, scale: 1,   speed: 2.5, downOffset: 45, mirrorFlip: false }
 };
+function getBossConfig(type) {
+    return BOSS_CONFIG[type] || { width: 250, height: 350, scale: 1, speed: 2.5, downOffset: 45, mirrorFlip: false };
+}
 
 // --- Spawn-verhoudingen (makkelijk aanpasbaar) ---
 // Normaal vs hooligan: L1 = 80% normaal / 20% hooligan; hoger level = meer hooligans
@@ -291,7 +294,6 @@ const SUP_D_SCALE_X = 1.7;
 const SUP_D_SCALE_Y = 1.2; 
 const HOOLI_SCALE_X = 1.2;
 const HOOLI_SCALE_Y = 1.2;
-const BOSS_SCALES = { boss0: 1.7, boss1: 1, boss2: 1, boss3: 1, boss4: 1 };
 
 // --- Schaal geraakt-/down-afbeelding (aparte X,Y per type) ---
 const SUP_A_HIT_SCALE_X = 1.35;
@@ -490,16 +492,18 @@ function spawnBoss() {
         return leftX + t * (rightX - leftX);
     });
 
-    activeBosses = cfg.map((t, i) => ({
+    activeBosses = cfg.map((t, i) => {
+        const bc = getBossConfig(t);
+        return {
         type: t,
-        x: screenRight + 100 + (i * 350),          // spawn blijft gelijk
+        x: screenRight + 100 + (i * 350),
         y: 680,
-        width: 250,
-        height: 350,
+        width: bc.width,
+        height: bc.height,
         hp: (25 + currentLevel * 5) / (cfg.length * 0.8),
         maxHp: (25 + currentLevel * 5) / (cfg.length * 0.8),
-        speed: BOSS_SPEEDS[t] ?? 2.5,
-        currentVx: -(BOSS_SPEEDS[t] ?? 2.5),
+        speed: bc.speed,
+        currentVx: -bc.speed,
         vxTimer: 0,
         isHit: false,
         hitFlash: 0,
@@ -511,9 +515,10 @@ function spawnBoss() {
         moveFlipTimer: 0,
 
         laneIndex: i,
-        targetX: laneCenters[i],                 // gewenste positie in beeld
+        targetX: laneCenters[i],
         ...(t === 'boss0' ? { animTime: 0, downAnimTime: 0 } : {})
-    }));
+    };
+    });
 
     if (els.bossHealthContainer) els.bossHealthContainer.style.display = 'block';
     updateBossUI();
@@ -1037,18 +1042,14 @@ function render() {
     }
     for (let b of activeBosses) {
         ctx.save();
-        const bossScale = BOSS_SCALES[b.type] ?? 1;
-        const drawH = b.height * bossScale;
-        const drawW = b.width * bossScale;
-        // Voeten op de stoep (VIRTUAL_HEIGHT - 50); staand: onderkant sprite op stoep; down: liggend op stoep
+        const bc = getBossConfig(b.type);
+        const drawH = b.height * bc.scale;
+        const drawW = b.width * bc.scale;
         const groundY = VIRTUAL_HEIGHT - 15;
-        const centerY = b.isHit ? groundY - 45 : groundY - drawH / 2;
+        const centerY = b.isHit ? groundY - bc.downOffset : groundY - drawH / 2;
         ctx.translate(b.x + b.width / 2, centerY);
-    
-        // Bepaal looprichting op basis van currentVx (negatief = links, positief = rechts)
         const movingRight = (b.currentVx || 0) > 0 && !b.isHit;
-        // Clown-sprites kijken standaard de andere kant op dan andere bazen
-        const mirror = b.type === 'boss0' ? !movingRight : movingRight;
+        const mirror = bc.mirrorFlip ? !movingRight : movingRight;
         if (mirror) ctx.scale(-1, 1);
     
         let sk;
