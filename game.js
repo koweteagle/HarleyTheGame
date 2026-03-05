@@ -106,7 +106,7 @@ const levelBossConfig = {
 // Normale supporters (A, C en D)
 const SUP_NORMAL_BASE_SPEED = 5;      // basissnelheid
 const SUP_NORMAL_SPEED_RANGE = 6;     // extra random snelheid (0..range)
-const SUP_A_SPEED_MULT = 1.0;         // factor voor supporter A (variant 1)
+const SUP_A_SPEED_MULT = 0.5;         // factor voor supporter A (variant 1)
 const SUP_C_SPEED_MULT = 1.0;         // factor voor supporter C (variant 3)
 const SUP_D_SPEED_MULT = 1.25;        // factor voor supporter D (variant 4) – iets sneller
 
@@ -265,7 +265,7 @@ const SUP_D_KEYS = ['groen1', 'groen2', 'groen3', 'groen4', 'groen5', 'groen6', 
 
 // --- Grootte/schaal per type (1 = standaard, <1 kleiner, >1 groter) ---
 const SUP_A_SCALE_X = 1.7;
-const SUP_A_SCALE_Y = 1.5;
+const SUP_A_SCALE_Y = 2;
 const SUP_C_SCALE_X = 1;
 const SUP_C_SCALE_Y = 1;
 const SUP_D_SCALE_X = 1.50;
