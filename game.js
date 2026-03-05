@@ -127,6 +127,8 @@ const assets = {
     supC3: { src: 'assets/supC/supC3.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter C run 3' },
     supCDown: { src: 'assets/supC/supC_down.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter C geraakt' },
     normalHit: { src: 'assets/pecsup1lig_1.png', canvas: document.createElement('canvas'), loaded: false, label: 'Geraakt 1' },
+    groenSheet: { src: 'assets/supD/groen.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter D (groen) loop' },
+    supDDown: { src: 'assets/supD/groen_down.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter D geraakt' },
 
     // Hooligan: assets/hooligan — ren hooli1–5, gooi hooli1gooit–hooli6gooit
     hooliRun1: { src: 'assets/hooligan/hooli1.png', canvas: document.createElement('canvas'), loaded: false, label: 'Hooligan run 1' },
@@ -161,6 +163,7 @@ const HOOLI_RUN_KEYS = ['hooliRun1', 'hooliRun2', 'hooliRun3', 'hooliRun4', 'hoo
 const HOOLI_THROW_KEYS = ['hooliThrow1', 'hooliThrow2', 'hooliThrow3', 'hooliThrow4', 'hooliThrow5', 'hooliThrow6'];
 const SUP_ARENT_KEYS = ['supArent1', 'supArent2', 'supArent3', 'supArent4', 'supArent5'];
 const SUP_C_KEYS = ['supC1', 'supC2', 'supC3'];
+const GROEN_FRAME_COUNT = 9;
 
 const bossDownMap = { boss1: 'boss1Down', boss2: 'boss2Down', boss3: 'boss3Down', boss4: 'boss4Down' };
 
@@ -538,8 +541,8 @@ function update(dt) {
                 animSpeed: (0.08 + Math.random() * 0.06) * speedMult  // ren-animatie in pas met loopsnelheid
             });
         } else {
-            // Normale supporters: supA (1) of supC (3)
-            const variant = Math.random() < 0.5 ? 1 : 3;
+            // Normale supporters: supA (1), supC (3) of supD/groen (4)
+            const variant = [1, 3, 4][Math.floor(Math.random() * 3)];
             targets.push({
                 type: 'normal',
                 x: -160,
@@ -549,7 +552,7 @@ function update(dt) {
                 variant,
                 hitTime: 0,
                 throwTimer: 0,
-                ...((variant === 1 || variant === 3) && { animTime: Math.random() * (variant === 3 ? 3 : 5), animSpeed: variant === 3 ? 0.08 : 0.12 })
+                ...((variant === 1 || variant === 3 || variant === 4) && { animTime: Math.random() * (variant === 3 ? 3 : variant === 4 ? 9 : 5), animSpeed: variant === 3 ? 0.08 : variant === 4 ? 0.12 : 0.12 })
             });
         }
     }
@@ -563,8 +566,8 @@ function update(dt) {
                 // Normale supporters: lopen links → rechts
                 t.x += t.speed;                  // eigen loopsnelheid naar rechts
                 t.x -= currentEffectiveWorldSpeed; // wereld schuift naar links
-                // Supporter A (variant 1) en C (variant 3): run-animatie door frames
-                if (t.variant === 1 || t.variant === 3) t.animTime = (t.animTime || 0) + (t.animSpeed ?? 0.12);
+                // Supporter A (1), C (3) en D/groen (4): run-animatie door frames
+                if (t.variant === 1 || t.variant === 3 || t.variant === 4) t.animTime = (t.animTime || 0) + (t.animSpeed ?? 0.12);
 
             } else if (t.type === 'hooligan') {
                 // Hooligans: random links/rechts bewegen, plus wereld‑scroll
@@ -745,7 +748,7 @@ function render() {
         ctx.save();
     
         // Teken rond het midden van de sprite
-        const hitYOffset = (t.isHit && t.variant === 3) ? 125 : (t.isHit && t.variant === 1) ? 65 : (t.isHit ? 28 : 0);  // supA/supC op stoep, supC lager
+        const hitYOffset = (t.isHit && t.variant === 3) ? 125 : (t.isHit && (t.variant === 1 || t.variant === 4)) ? 65 : (t.isHit ? 28 : 0);  // supA/supC/supD op stoep, supC lager
         ctx.translate(t.x + halfW, VIRTUAL_HEIGHT - 50 + hitYOffset);
     
         // Spiegelen
@@ -756,7 +759,7 @@ function render() {
         if (t.isHit) {
             sk = isHooligan
                 ? 'hooliHit'
-                : (t.variant === 3 ? 'supCDown' : 'normalHit');
+                : (t.variant === 4 ? 'supDDown' : t.variant === 3 ? 'supCDown' : 'normalHit');
         } else {
             if (isHooligan) {
                 if (t.throwTimer > 70) {
@@ -766,6 +769,20 @@ function render() {
                     const frameIndex = Math.floor(t.animTime || 0) % HOOLI_RUN_KEYS.length;
                     sk = HOOLI_RUN_KEYS[frameIndex];
                 }
+            } else if (t.variant === 4) {
+                // Supporter D (groen): 9-frame sprite sheet
+                if (assets.groenSheet.loaded) {
+                    const frameIndex = Math.floor(t.animTime || 0) % GROEN_FRAME_COUNT;
+                    const fw = assets.groenSheet.canvas.width / GROEN_FRAME_COUNT;
+                    const fh = assets.groenSheet.canvas.height;
+                    ctx.drawImage(
+                        assets.groenSheet.canvas,
+                        frameIndex * fw, 0, fw, fh,
+                        -halfW, -fullH, halfW * 2, fullH
+                    );
+                }
+                ctx.restore();
+                continue;
             } else {
                 const runKeys = t.variant === 3 ? SUP_C_KEYS : SUP_ARENT_KEYS;
                 sk = runKeys[Math.floor(t.animTime || 0) % runKeys.length];
@@ -773,8 +790,8 @@ function render() {
         }
     
         if (assets[sk].loaded) {
-            // Hit-sprites (normalHit, supCDown, hooliHit) zijn klein in de bron; schalen voor gelijke visuele grootte
-            const hitScale = (sk === 'supCDown') ? 1.8 : (sk === 'normalHit') ? 1.35 : (sk === 'hooliHit') ? 1.2 : 1;
+            // Hit-sprites (normalHit, supCDown, supDDown, hooliHit) zijn klein in de bron; schalen voor gelijke visuele grootte
+            const hitScale = (sk === 'supCDown') ? 1.8 : (sk === 'supDDown') ? 1.35 : (sk === 'normalHit') ? 1.35 : (sk === 'hooliHit') ? 1.2 : 1;
             const drawHalfW = halfW * hitScale;
             const drawFullH = fullH * hitScale;
             ctx.drawImage(
