@@ -320,27 +320,38 @@ async function preload() {
             }
                 
             const timeout = setTimeout(() => {
-                item.loaded = false; loadedCount++; addFailedAsset(item.label); updateLoadingBar(loadedCount, total); resolve();
-            }, 10000); 
+                item.loaded = false; loadedCount++;
+                if (!key.startsWith('clownLoop') && !key.startsWith('clownThrow') && !key.startsWith('clownDown')) addFailedAsset(item.label);
+                updateLoadingBar(loadedCount, total); resolve();
+            }, 60000); 
 
             img.onload = () => {
                 clearTimeout(timeout);
                 try {
-                    item.canvas.width = img.width;
-                    item.canvas.height = img.height;
+                    const maxSize = 2048;
+                    let w = img.width, h = img.height;
+                    if (w > maxSize || h > maxSize) {
+                        const scale = maxSize / Math.max(w, h);
+                        w = Math.round(w * scale);
+                        h = Math.round(h * scale);
+                    }
+                    item.canvas.width = w;
+                    item.canvas.height = h;
                     const aCtx = item.canvas.getContext('2d');
-                    aCtx.drawImage(img, 0, 0);
+                    aCtx.drawImage(img, 0, 0, img.width, img.height, 0, 0, w, h);
                     item.loaded = true;
                 } catch (e) {
                     item.loaded = false;
-                    addFailedAsset(item.label);
+                    if (!key.startsWith('clownLoop') && !key.startsWith('clownThrow') && !key.startsWith('clownDown')) addFailedAsset(item.label);
                 }
                 loadedCount++;
                 updateLoadingBar(loadedCount, total);
                 resolve();
             };
             img.onerror = () => {
-                clearTimeout(timeout); item.loaded = false; loadedCount++; addFailedAsset(item.label); updateLoadingBar(loadedCount, total); resolve();
+                clearTimeout(timeout); item.loaded = false; loadedCount++;
+                if (!key.startsWith('clownLoop') && !key.startsWith('clownThrow') && !key.startsWith('clownDown')) addFailedAsset(item.label);
+                updateLoadingBar(loadedCount, total); resolve();
             };
             img.src = item.src;
         });
@@ -998,6 +1009,9 @@ function render() {
             } else {
                 const loopFrame = Math.floor(b.animTime || 0) % CLOWN_LOOP_KEYS.length;
                 sk = CLOWN_LOOP_KEYS[loopFrame];
+            }
+            if (!assets[sk] || !assets[sk].loaded) {
+                sk = b.isHit ? CLOWN_DOWN_KEYS[0] : (b.throwVisualTimer > 0 ? CLOWN_THROW_KEYS[0] : CLOWN_LOOP_KEYS[0]);
             }
         } else {
             sk = b.isHit
