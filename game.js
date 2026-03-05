@@ -288,8 +288,8 @@ const SUP_A_HIT_SCALE_X = 1.35;
 const SUP_A_HIT_SCALE_Y = 1.35;
 const SUP_C_HIT_SCALE_X = 1.8;
 const SUP_C_HIT_SCALE_Y = 1.8;
-const SUP_D_HIT_SCALE_X = 1.0;
-const SUP_D_HIT_SCALE_Y = 1.0;
+const SUP_D_HIT_SCALE_X = 1.7;
+const SUP_D_HIT_SCALE_Y = 1.2;
 const HOOLI_HIT_SCALE_X = 1.2;
 const HOOLI_HIT_SCALE_Y = 1.2;
 
