@@ -124,16 +124,17 @@ const HOOLIGAN_VX_WORLD_OFFSET = 6;   // extra t.o.v. BASE_WORLD_SPEED voor vx
 
 // Eindbazen: per type alle instellingen op één plek (hoogte, grootte, snelheid, down-pose, projectielen, etc.)
 // downScale = schaal down-afbeelding. downOffset / offset = verticale verschuiving down/staand.
-// throwCount = aantal projectielen per worp (1 = enkel). throwSpeedMult = snelheid (1 = normaal, <1 langzamer).
+// throwCount = aantal projectielen per worp. throwTimeToTarget = frames tot projectiel de adelaar bereikt (hoger = langzamer).
+// throwHitChance = kans 0–1 dat een worp de adelaar raakt (anders mis). throwDamage = schade aan adelaar bij treffer.
 const BOSS_CONFIG = {
-    boss0: { width: 260, height: 350, scale: 1.7, speed: 2.5, downScale: 1,    downOffset: 0, offset: 25, mirrorFlip: true, throwCount: 1, throwSpeedMult: 1 },
-    boss1: { width: 250, height: 350, scale: 1,   speed: 2.5, downScale: 1,    downOffset: 0, offset: 0, mirrorFlip: true, throwCount: 6, throwSpeedMult: 0.5 },
-    boss2: { width: 250, height: 350, scale: 1,   speed: 2.5, downScale: 1,    downOffset: 0, offset: 0, mirrorFlip: false, throwCount: 1, throwSpeedMult: 1 },
-    boss3: { width: 250, height: 350, scale: 1,   speed: 2.5, downScale: 1,    downOffset: 0, offset: 0, mirrorFlip: false, throwCount: 1, throwSpeedMult: 1 },
-    boss4: { width: 250, height: 350, scale: 1,   speed: 2.5, downScale: 1,    downOffset: 0, offset: 0, mirrorFlip: false, throwCount: 1, throwSpeedMult: 1 }
+    boss0: { width: 260, height: 350, scale: 1.7, speed: 2.5, downScale: 1,    downOffset: 0, offset: 25, mirrorFlip: true, throwCount: 1, throwTimeToTarget: 80, throwHitChance: 0.5, throwDamage: 4 },
+    boss1: { width: 250, height: 350, scale: 1,   speed: 2.5, downScale: 1,    downOffset: 0, offset: 0, mirrorFlip: true, throwCount: 6, throwTimeToTarget: 70, throwHitChance: 0.6, throwDamage: 4 },
+    boss2: { width: 250, height: 350, scale: 1,   speed: 2.5, downScale: 1,    downOffset: 0, offset: 0, mirrorFlip: false, throwCount: 1, throwTimeToTarget: 60, throwHitChance: 0.7, throwDamage: 6 },
+    boss3: { width: 250, height: 350, scale: 1,   speed: 2.5, downScale: 1,    downOffset: 0, offset: 0, mirrorFlip: false, throwCount: 1, throwTimeToTarget: 50, throwHitChance: 0.7, throwDamage: 6 },
+    boss4: { width: 250, height: 350, scale: 1,   speed: 2.5, downScale: 1,    downOffset: 0, offset: 0, mirrorFlip: false, throwCount: 1, throwTimeToTarget: 40, throwHitChance: 0.8, throwDamage: 8 }
 };
 function getBossConfig(type) {
-    return BOSS_CONFIG[type] || { width: 250, height: 350, scale: 1, speed: 2.5, downScale: 1, downOffset: 0, offset: 0, mirrorFlip: false, throwCount: 1, throwSpeedMult: 1 };
+    return BOSS_CONFIG[type] || { width: 250, height: 350, scale: 1, speed: 2.5, downScale: 1, downOffset: 0, offset: 0, mirrorFlip: false, throwCount: 1, throwTimeToTarget: 50, throwHitChance: 0.7, throwDamage: 6 };
 }
 
 // --- Spawn-verhoudingen (makkelijk aanpasbaar) ---
@@ -720,7 +721,7 @@ function update(dt) {
         const bg = beerGlasses[i]; bg.x += bg.vx; bg.y += bg.vy; bg.vy += 0.45; bg.x -= currentEffectiveWorldSpeed;
         if(bg.y > VIRTUAL_HEIGHT) { beerGlasses.splice(i,1); continue; }
         if(bg.x > player.x && bg.x < player.x+player.width && bg.y > player.y && bg.y < player.y+player.height) {
-            player.hp -= (5 + (currentLevel-1)*2); player.hitFlash = 15; beerGlasses.splice(i, 1);
+            player.hp -= (bg.damage != null ? bg.damage : (5 + (currentLevel-1)*2)); player.hitFlash = 15; beerGlasses.splice(i, 1);
             if (els.healthBar) els.healthBar.style.width = Math.max(0, player.hp)+'%';
             if(player.hp <= 0) player.isDead = true;
         }
@@ -940,17 +941,32 @@ function update(dt) {
                 if (!b.eatVisualTimer || b.eatVisualTimer <= 0) {
                     const bc = getBossConfig(b.type);
                     const count = bc.throwCount ?? 1;
-                    const speedMult = bc.throwSpeedMult ?? 1;
-                    const baseVx = (player.x - b.x) * 0.02 * speedMult;
-                    const baseVy = (-25 - (Math.random() * 5)) * speedMult;
+                    const hitChance = bc.throwHitChance ?? 0.7;
+                    const timeToTarget = bc.throwTimeToTarget ?? 50;
+                    const G = 0.45;
                     for (let i = 0; i < count; i++) {
-                        const spread = count > 1 ? (i - (count - 1) / 2) * 2.5 + (Math.random() - 0.5) * 2 : 0;
+                        const spawnX = b.x + 100 + (Math.random() - 0.5) * 30;
+                        const spawnY = b.y + 100;
+                        // Richting adelaar; soms gehaald (binnen trefzone), soms mis (random offset)
+                        const aimAtPlayer = Math.random() < hitChance;
+                        const spreadX = count > 1 ? (i - (count - 1) / 2) * 25 + (Math.random() - 0.5) * 20 : (Math.random() - 0.5) * 15;
+                        const spreadY = (Math.random() - 0.5) * 20;
+                        const missX = (Math.random() - 0.5) * 400;
+                        const missY = (Math.random() - 0.5) * 200;
+                        const targetX = player.x + player.width / 2 + (aimAtPlayer ? spreadX : missX);
+                        const targetY = player.y + player.height / 2 + (aimAtPlayer ? spreadY : missY);
+                        const dx = targetX - spawnX;
+                        const dy = targetY - spawnY;
+                        const t = Math.max(20, timeToTarget);
+                        const vx = dx / t;
+                        const vy = dy / t - 0.5 * G * t;
                         beerGlasses.push({
-                            x: b.x + 100 + (Math.random() - 0.5) * 30,
-                            y: b.y + 100,
-                            vx: baseVx + spread,
-                            vy: baseVy + (count > 1 ? (Math.random() - 0.5) * 4 : 0),
-                            type: pt
+                            x: spawnX,
+                            y: spawnY,
+                            vx,
+                            vy,
+                            type: pt,
+                            damage: bc.throwDamage ?? 6
                         });
                     }
                 }
