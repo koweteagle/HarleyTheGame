@@ -126,7 +126,7 @@ const HOOLIGAN_VX_WORLD_OFFSET = 6;   // extra t.o.v. BASE_WORLD_SPEED voor vx
 // downScale = schaal van de down-afbeelding (1 = zelfde als staand; <1 kleiner zodat hij op beeld blijft)
 // downOffset = extra verticale verschuiving in px (positief = naar beneden, negatief = omhoog)
 const BOSS_CONFIG = {
-    boss0: { width: 260, height: 350, scale: 1.7, speed: 2.5, downScale: 1.1, downOffset: 55, mirrorFlip: true },
+    boss0: { width: 260, height: 350, scale: 1.7, speed: 2.5, downScale: 1.1, downOffset: 0, mirrorFlip: true },
     boss1: { width: 250, height: 350, scale: 1,   speed: 2.5, downScale: 1,    downOffset: 0, mirrorFlip: true },
     boss2: { width: 250, height: 350, scale: 1,   speed: 2.5, downScale: 1,    downOffset: 0, mirrorFlip: false },
     boss3: { width: 250, height: 350, scale: 1,   speed: 2.5, downScale: 1,    downOffset: 0, mirrorFlip: false },
