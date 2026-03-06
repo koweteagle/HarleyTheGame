@@ -122,18 +122,18 @@ const HOOLIGAN_SPEEDMULT_MIN = 0.65;  // minimale individuele multiplier
 const HOOLIGAN_SPEEDMULT_MAX = 1.35;  // maximale individuele multiplier
 const HOOLIGAN_VX_WORLD_OFFSET = 6;   // extra t.o.v. BASE_WORLD_SPEED voor vx
 
-// Eindbazen: per type alle instellingen op één plek (hoogte, grootte, snelheid, down-pose, etc.)
-// downScale = schaal van de down-afbeelding (1 = zelfde als staand; <1 kleiner zodat hij op beeld blijft)
-// downOffset = verticale verschuiving down-pose (positief = naar beneden). offset = idem voor staande pose
+// Eindbazen: per type alle instellingen op één plek (hoogte, grootte, snelheid, down-pose, projectielen, etc.)
+// downScale = schaal down-afbeelding. downOffset / offset = verticale verschuiving down/staand.
+// throwCount = aantal projectielen per worp (1 = enkel). throwSpeedMult = snelheid (1 = normaal, <1 langzamer).
 const BOSS_CONFIG = {
-    boss0: { width: 260, height: 350, scale: 1.7, speed: 2.5, downScale: 1,    downOffset: 0, offset: 25, mirrorFlip: true },
-    boss1: { width: 250, height: 350, scale: 1,   speed: 2.5, downScale: 1,    downOffset: 0, offset: 0, mirrorFlip: true },
-    boss2: { width: 250, height: 350, scale: 1,   speed: 2.5, downScale: 1,    downOffset: 0, offset: 0, mirrorFlip: false },
-    boss3: { width: 250, height: 350, scale: 1,   speed: 2.5, downScale: 1,    downOffset: 0, offset: 0, mirrorFlip: false },
-    boss4: { width: 250, height: 350, scale: 1,   speed: 2.5, downScale: 1,    downOffset: 0, offset: 0, mirrorFlip: false }
+    boss0: { width: 260, height: 350, scale: 1.7, speed: 2.5, downScale: 1,    downOffset: 0, offset: 25, mirrorFlip: true, throwCount: 1, throwSpeedMult: 1 },
+    boss1: { width: 250, height: 350, scale: 1,   speed: 2.5, downScale: 1,    downOffset: 0, offset: 0, mirrorFlip: true, throwCount: 6, throwSpeedMult: 0.5 },
+    boss2: { width: 250, height: 350, scale: 1,   speed: 2.5, downScale: 1,    downOffset: 0, offset: 0, mirrorFlip: false, throwCount: 1, throwSpeedMult: 1 },
+    boss3: { width: 250, height: 350, scale: 1,   speed: 2.5, downScale: 1,    downOffset: 0, offset: 0, mirrorFlip: false, throwCount: 1, throwSpeedMult: 1 },
+    boss4: { width: 250, height: 350, scale: 1,   speed: 2.5, downScale: 1,    downOffset: 0, offset: 0, mirrorFlip: false, throwCount: 1, throwSpeedMult: 1 }
 };
 function getBossConfig(type) {
-    return BOSS_CONFIG[type] || { width: 250, height: 350, scale: 1, speed: 2.5, downScale: 1, downOffset: 0, offset: 0, mirrorFlip: false };
+    return BOSS_CONFIG[type] || { width: 250, height: 350, scale: 1, speed: 2.5, downScale: 1, downOffset: 0, offset: 0, mirrorFlip: false, throwCount: 1, throwSpeedMult: 1 };
 }
 
 // --- Spawn-verhoudingen (makkelijk aanpasbaar) ---
@@ -938,13 +938,21 @@ function update(dt) {
                         : (b.type === 'boss4' ? 'HAMBURGER' : (b.type === 'boss1' ? 'BRICK' : 'STONE')));
     
                 if (!b.eatVisualTimer || b.eatVisualTimer <= 0) {
-                    beerGlasses.push({
-                        x: b.x + 100,
-                        y: b.y + 100,
-                        vx: (player.x - b.x) * 0.02,
-                        vy: -25 - (Math.random() * 5),
-                        type: pt
-                    });
+                    const bc = getBossConfig(b.type);
+                    const count = bc.throwCount ?? 1;
+                    const speedMult = bc.throwSpeedMult ?? 1;
+                    const baseVx = (player.x - b.x) * 0.02 * speedMult;
+                    const baseVy = (-25 - (Math.random() * 5)) * speedMult;
+                    for (let i = 0; i < count; i++) {
+                        const spread = count > 1 ? (i - (count - 1) / 2) * 2.5 + (Math.random() - 0.5) * 2 : 0;
+                        beerGlasses.push({
+                            x: b.x + 100 + (Math.random() - 0.5) * 30,
+                            y: b.y + 100,
+                            vx: baseVx + spread,
+                            vy: baseVy + (count > 1 ? (Math.random() - 0.5) * 4 : 0),
+                            type: pt
+                        });
+                    }
                 }
             }
         }
