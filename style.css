@@ -200,6 +200,33 @@ canvas { display: block; image-rendering: pixelated; }
     display: inline-block;
 }
 
+#level-loading-overlay {
+    justify-content: center;
+    z-index: 150;
+}
+.level-loading-title {
+    font-size: 22px;
+    margin-bottom: 20px;
+    color: white;
+    text-shadow: 2px 2px 0 #000;
+}
+.level-loading-bar-container {
+    width: 280px;
+    max-width: 85vw;
+    height: 24px;
+    background: rgba(0,0,0,0.6);
+    border: 3px solid rgba(255,255,255,0.4);
+    border-radius: 12px;
+    overflow: hidden;
+}
+.level-loading-bar {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(to right, #0a0, #0f0);
+    border-radius: 9px;
+    transition: width 0.15s ease-out;
+}
+
 #boss-summary-container { 
     display: flex; 
     gap: 10px; 

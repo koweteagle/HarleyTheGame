@@ -37,6 +37,9 @@ const els = {
     levelText: document.getElementById('level-text'),
     levelUpScreen: document.getElementById('level-up-screen'),
     levelUpText: document.getElementById('level-up-text'),
+    levelLoadingOverlay: document.getElementById('level-loading-overlay'),
+    levelLoadingText: document.getElementById('level-loading-text'),
+    levelLoadingBar: document.getElementById('level-loading-bar'),
     loadingText: document.getElementById('loading-text'),
     restartBtn: document.getElementById('restart-btn'),
     scoreText: document.getElementById('score-text'),
@@ -386,6 +389,7 @@ async function loadAssets(keys, options = {}) {
     const onProgress = (k, t) => {
         done++;
         if (options.updateLoadingBar && t != null) updateLoadingBar(done, t);
+        if (options.onLevelProgress) options.onLevelProgress(done, t);
     };
     const promises = toLoad.map(k => loadAsset(k, { ...options, onProgress, totalForProgress: total, timeoutMs: options.timeoutMs ?? 60000 }));
     await Promise.all(promises);
@@ -406,16 +410,26 @@ async function preloadCore() {
     if (els.startBtn) els.startBtn.disabled = false;
 }
 
+function updateLevelLoadingProgress(level, current, total) {
+    const pct = total ? Math.round((current / total) * 100) : 0;
+    if (els.levelLoadingText) els.levelLoadingText.textContent = `Level ${level} laden... ${pct}%`;
+    if (els.levelLoadingBar && total) els.levelLoadingBar.style.width = `${(current / total) * 100}%`;
+}
+
 async function loadLevelAssets(level) {
     const keys = getLevelAssetKeys(level);
     const toLoad = keys.filter(k => assets[k] && !assets[k].loaded);
     if (toLoad.length === 0) return;
-    if (els.loadingText) {
-        els.loadingText.style.display = 'block';
-        els.loadingText.innerText = `Level ${level} laden...`;
+    if (els.levelLoadingOverlay) {
+        els.levelLoadingOverlay.style.display = 'flex';
+        updateLevelLoadingProgress(level, 0, toLoad.length);
     }
-    await loadAssets(keys, { timeoutMs: 60000, silentFail: true });
-    if (els.loadingText) els.loadingText.style.display = 'none';
+    await loadAssets(keys, {
+        timeoutMs: 60000,
+        silentFail: true,
+        onLevelProgress: (current, total) => updateLevelLoadingProgress(level, current, total)
+    });
+    if (els.levelLoadingOverlay) els.levelLoadingOverlay.style.display = 'none';
 }
 
 async function preload() {
