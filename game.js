@@ -127,8 +127,8 @@ const HOOLIGAN_VX_WORLD_OFFSET = 6;   // extra t.o.v. BASE_WORLD_SPEED voor vx
 // throwCount = aantal projectielen per worp. throwTimeToTarget = frames tot projectiel de adelaar bereikt (hoger = langzamer).
 // throwHitChance = kans 0–1 dat een worp de adelaar raakt (anders mis). throwDamage = schade aan adelaar bij treffer.
 const BOSS_CONFIG = {
-    boss0: { width: 260, height: 350, scale: 1.7, speed: 2.5, downScale: 1,    downOffset: 0, offset: 25, mirrorFlip: true, throwCount: 1, throwTimeToTarget: 80, throwHitChance: 0.5, throwDamage: 4 },
-    boss1: { width: 250, height: 350, scale: 1,   speed: 2.5, downScale: 1,    downOffset: 0, offset: 0, mirrorFlip: true, throwCount: 6, throwTimeToTarget: 70, throwHitChance: 0.6, throwDamage: 4 },
+    boss0: { width: 260, height: 350, scale: 1.7, speed: 2.5, downScale: 1,    downOffset: 0, offset: 25, mirrorFlip: true, throwCount: 1, throwTimeToTarget: 80, throwHitChance: 0.5, throwDamage: 2 },
+    boss1: { width: 250, height: 350, scale: 1,   speed: 2.5, downScale: 1,    downOffset: 0, offset: 0, mirrorFlip: true, throwCount: 6, throwTimeToTarget: 100, throwHitChance: 0.3, throwDamage: 3 },
     boss2: { width: 250, height: 350, scale: 1,   speed: 2.5, downScale: 1,    downOffset: 0, offset: 0, mirrorFlip: false, throwCount: 1, throwTimeToTarget: 60, throwHitChance: 0.7, throwDamage: 6 },
     boss3: { width: 250, height: 350, scale: 1,   speed: 2.5, downScale: 1,    downOffset: 0, offset: 0, mirrorFlip: false, throwCount: 1, throwTimeToTarget: 50, throwHitChance: 0.7, throwDamage: 6 },
     boss4: { width: 250, height: 350, scale: 1,   speed: 2.5, downScale: 1,    downOffset: 0, offset: 0, mirrorFlip: false, throwCount: 1, throwTimeToTarget: 40, throwHitChance: 0.8, throwDamage: 8 }
