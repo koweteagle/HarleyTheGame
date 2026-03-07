@@ -11,9 +11,20 @@ const SOUND_POOP_URL = 'assets/soundeffects/schijt1.mp3';
 const SOUND_BOM_URL = 'assets/soundeffects/bom.mp3';
 const SOUND_SPRAY_URL = 'assets/soundeffects/spray.mp3';
 
-// Volume 0–1: achtergrondmuziek en sound effects (hier makkelijk in te stellen)
-const VOLUME_MUSIC = 0.2;
-const VOLUME_SFX = 1;
+// Volume 0–1: standaard en opslagkeys (gebruiker kan instellen via Instellingen)
+const DEFAULT_VOLUME_MUSIC = 0.2;
+const DEFAULT_VOLUME_SFX = 1;
+const VOLUME_STORAGE_KEY_MUSIC = 'harley_vol_music';
+const VOLUME_STORAGE_KEY_SFX = 'harley_vol_sfx';
+function getStoredVolume(key, def) {
+    try {
+        const v = parseFloat(localStorage.getItem(key));
+        if (!Number.isNaN(v)) return Math.max(0, Math.min(1, v));
+    } catch (e) {}
+    return def;
+}
+let musicVolume = getStoredVolume(VOLUME_STORAGE_KEY_MUSIC, DEFAULT_VOLUME_MUSIC);
+let sfxVolume = getStoredVolume(VOLUME_STORAGE_KEY_SFX, DEFAULT_VOLUME_SFX);
 
 const VIRTUAL_HEIGHT = 1080;
 const VIRTUAL_WIDTH = 1920;
@@ -55,6 +66,13 @@ const els = {
     startBtn: document.getElementById('start-btn'),
     startScreen: document.getElementById('start-screen'),
     continueBtn: document.getElementById('continue-btn'),
+    settingsBtn: document.getElementById('settings-btn'),
+    settingsModal: document.getElementById('settings-modal'),
+    musicSlider: document.getElementById('music-slider'),
+    sfxSlider: document.getElementById('sfx-slider'),
+    musicValue: document.getElementById('music-value'),
+    sfxValue: document.getElementById('sfx-value'),
+    closeSettingsBtn: document.getElementById('close-settings-btn'),
 };
 
 const canvas = document.getElementById('gameCanvas');
@@ -65,19 +83,22 @@ const bgImg = new Image();
    
 const levelAudio = new Audio(LEVEL_START_AUDIO_URL);
 levelAudio.loop = true;
-levelAudio.volume = VOLUME_MUSIC;
 const winAudio = new Audio(LEVEL_WIN_AUDIO_URL);
-winAudio.volume = VOLUME_MUSIC;
 const gameOverAudio = new Audio(LEVEL_GAMEOVER_AUDIO_URL);
-gameOverAudio.volume = VOLUME_MUSIC;
 const soundEagle = new Audio(SOUND_EAGLE_URL);
-soundEagle.volume = VOLUME_SFX;
 const soundPoop = new Audio(SOUND_POOP_URL);
-soundPoop.volume = VOLUME_SFX;
 const soundBom = new Audio(SOUND_BOM_URL);
-soundBom.volume = VOLUME_SFX;
 const soundSpray = new Audio(SOUND_SPRAY_URL);
-soundSpray.volume = VOLUME_SFX; 
+function applyVolumes() {
+    levelAudio.volume = musicVolume;
+    winAudio.volume = musicVolume;
+    gameOverAudio.volume = musicVolume;
+    soundEagle.volume = sfxVolume;
+    soundPoop.volume = sfxVolume;
+    soundBom.volume = sfxVolume;
+    soundSpray.volume = sfxVolume;
+}
+applyVolumes(); 
 
 // --- 2. STATE ---
 let gameScale = 1;
@@ -1335,6 +1356,15 @@ bind('btn-DIARREE', () => window.triggerSpecial('DIARREE'));
 bind('btn-POEPBOM', () => window.triggerSpecial('POEPBOM'));
 bind('info-btn', () => { if (els.infoModal) els.infoModal.style.display = 'flex'; });
 bind('close-info-btn', () => { if (els.infoModal) els.infoModal.style.display = 'none'; });
+bind('settings-btn', () => {
+    if (!els.settingsModal) return;
+    if (els.musicSlider) els.musicSlider.value = Math.round(musicVolume * 100);
+    if (els.sfxSlider) els.sfxSlider.value = Math.round(sfxVolume * 100);
+    if (els.musicValue) els.musicValue.textContent = Math.round(musicVolume * 100) + '%';
+    if (els.sfxValue) els.sfxValue.textContent = Math.round(sfxVolume * 100) + '%';
+    els.settingsModal.style.display = 'flex';
+});
+bind('close-settings-btn', () => { if (els.settingsModal) els.settingsModal.style.display = 'none'; });
 bind('ios-later-btn', () => { if (els.iosModal) els.iosModal.style.display = 'none'; });
 
 async function forceLevel(n) {
@@ -1357,6 +1387,26 @@ window.addEventListener('load', () => {
     checkIOS();
     initDebugUI();
     initExternalLinks();
+    if (els.musicSlider) {
+        els.musicSlider.value = Math.round(musicVolume * 100);
+        els.musicSlider.addEventListener('input', () => {
+            musicVolume = Number(els.musicSlider.value) / 100;
+            try { localStorage.setItem(VOLUME_STORAGE_KEY_MUSIC, String(musicVolume)); } catch (e) {}
+            applyVolumes();
+            if (els.musicValue) els.musicValue.textContent = els.musicSlider.value + '%';
+        });
+        if (els.musicValue) els.musicValue.textContent = Math.round(musicVolume * 100) + '%';
+    }
+    if (els.sfxSlider) {
+        els.sfxSlider.value = Math.round(sfxVolume * 100);
+        els.sfxSlider.addEventListener('input', () => {
+            sfxVolume = Number(els.sfxSlider.value) / 100;
+            try { localStorage.setItem(VOLUME_STORAGE_KEY_SFX, String(sfxVolume)); } catch (e) {}
+            applyVolumes();
+            if (els.sfxValue) els.sfxValue.textContent = els.sfxSlider.value + '%';
+        });
+        if (els.sfxValue) els.sfxValue.textContent = Math.round(sfxVolume * 100) + '%';
+    }
 
     if (IS_DEBUG) {
         document.querySelectorAll('.debug-level-btn[data-level]').forEach((btn) => {
