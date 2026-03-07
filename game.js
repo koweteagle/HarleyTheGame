@@ -1083,8 +1083,8 @@ function render() {
     const bgKey = LEVEL_BG_KEYS[currentLevel] || 'background';
     const bgAsset = assets[bgKey];
     if (bgAsset && bgAsset.loaded) {
-        const dw = VIRTUAL_HEIGHT * (bgAsset.canvas.width / bgAsset.canvas.height);
-        const sx = (worldStep * 0.5) % dw;
+        const dw = Math.floor(VIRTUAL_HEIGHT * (bgAsset.canvas.width / bgAsset.canvas.height));
+        const sx = Math.floor((worldStep * 0.5) % dw);
         ctx.drawImage(bgAsset.canvas, -sx, 0, dw, VIRTUAL_HEIGHT);
         ctx.drawImage(bgAsset.canvas, dw - sx, 0, dw, VIRTUAL_HEIGHT);
     }
