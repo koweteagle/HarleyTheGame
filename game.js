@@ -1086,7 +1086,7 @@ function render() {
         const dw = Math.floor(VIRTUAL_HEIGHT * (bgAsset.canvas.width / bgAsset.canvas.height));
         const sx = Math.floor((worldStep * 0.5) % dw);
         ctx.drawImage(bgAsset.canvas, -sx, 0, dw, VIRTUAL_HEIGHT);
-        ctx.drawImage(bgAsset.canvas, dw - sx, 0, dw, VIRTUAL_HEIGHT);
+        ctx.drawImage(bgAsset.canvas, dw - sx - 1, 0, dw + 1, VIRTUAL_HEIGHT);
     }
     for (let t of targets) {
         const isHooligan = t.type === 'hooligan';
