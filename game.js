@@ -282,9 +282,7 @@ const assets = {
     supA72: { src: 'assets/supA/supA-72.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter A run 72' },
     ...Object.fromEntries([1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28].map(n => ['supB' + n, { src: encodeURI('assets/supB/clideo_editor_f51fd73e3cfa47e690fefe457e5e8273-' + n + ' (gesleept).png'), canvas: document.createElement('canvas'), loaded: false, label: 'Supporter B run ' + n }])),
     supBDown: { src: 'assets/supB/supBdown.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter B geraakt' },
-    supC1: { src: 'assets/supC/supC1.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter C run 1' },
-    supC2: { src: 'assets/supC/supC2.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter C run 2' },
-    supC3: { src: 'assets/supC/supC3.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter C run 3' },
+    ...Object.fromEntries(Array.from({ length: 192 }, (_, i) => i + 1).map(n => ['supC' + n, { src: encodeURI('assets/supC/clideo_editor_a34f2999050349deab53e2f225af9fa2-' + n + ' (gesleept).png'), canvas: document.createElement('canvas'), loaded: false, label: 'Supporter C run ' + n }])),
     supCDown: { src: 'assets/supC/supC_down.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter C geraakt' },
     normalHit: { src: 'assets/pecsup1lig_1.png', canvas: document.createElement('canvas'), loaded: false, label: 'Geraakt 1' },
     groen1: { src: 'assets/supD/groen-1 (gesleept).png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter D run 1' },
@@ -342,7 +340,7 @@ const ZWOLF_THROW_KEYS = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19].map(n
 const ZWOLF_DOWN_KEYS = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33].map(n => 'zwolfDown' + n);
 const SUP_ARENT_KEYS = Array.from({ length: 72 }, (_, i) => 'supA' + (i + 1));
 const SUP_B_KEYS = Array.from({ length: 28 }, (_, i) => 'supB' + (i + 1));
-const SUP_C_KEYS = ['supC1', 'supC2', 'supC3'];
+const SUP_C_KEYS = Array.from({ length: 192 }, (_, i) => 'supC' + (i + 1));
 const SUP_D_KEYS = ['groen1', 'groen2', 'groen3', 'groen4', 'groen5', 'groen6', 'groen7', 'groen8', 'groen9'];
 
 // --- Grootte/schaal per type (1 = standaard, <1 kleiner, >1 groter) ---
@@ -400,7 +398,7 @@ function loadAsset(key, options = {}) {
     return new Promise((resolve) => {
         const img = new Image();
         if (item.src.startsWith('http')) img.crossOrigin = 'anonymous';
-        const silent = silentFail || key.startsWith('clownLoop') || key.startsWith('clownThrow') || key.startsWith('clownDown') || key.startsWith('zwolfRun') || key.startsWith('zwolfThrow') || key.startsWith('zwolfDown');
+        const silent = silentFail || key.startsWith('clownLoop') || key.startsWith('clownThrow') || key.startsWith('clownDown') || key.startsWith('zwolfRun') || key.startsWith('zwolfThrow') || key.startsWith('zwolfDown') || (/^supC\d+$/.test(key));
         const timeout = setTimeout(() => {
             item.loaded = false;
             if (!silent) addFailedAsset(item.label);
@@ -859,8 +857,8 @@ function update(dt) {
                 variant === 2 ? SUP_B_SPEED_MULT :
                 variant === 3 ? SUP_C_SPEED_MULT :
                 SUP_D_SPEED_MULT;
-            const animFrames = variant === 1 ? 72 : variant === 2 ? 28 : variant === 3 ? 3 : 9;
-            const animSpd = variant === 3 ? 0.08 : variant === 4 ? 0.12 : variant === 2 ? 0.12 : 0.2;
+            const animFrames = variant === 1 ? 72 : variant === 2 ? 28 : variant === 3 ? 192 : 9;
+            const animSpd = variant === 3 ? 0.25 : variant === 4 ? 0.12 : variant === 2 ? 0.12 : 0.2;
             targets.push({
                 type: 'normal',
                 x: -160,
@@ -1137,6 +1135,9 @@ function render() {
         }
         if (!assets[drawSk]?.loaded && SUP_B_KEYS.includes(sk)) {
             drawSk = SUP_B_KEYS.find(k => assets[k].loaded) || sk;
+        }
+        if (!assets[drawSk]?.loaded && SUP_C_KEYS.includes(sk)) {
+            drawSk = SUP_C_KEYS.find(k => assets[k].loaded) || sk;
         }
         if (assets[drawSk].loaded) {
             let sizeScaleX = 1, sizeScaleY = 1;
