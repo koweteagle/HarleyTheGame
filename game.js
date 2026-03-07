@@ -195,6 +195,9 @@ const SUP_D_SPAWN_WEIGHT = 25;
 
 const LEVEL_BG_KEYS = { 1: 'bg_level1', 2: 'bg_level2', 3: 'bg_level3', 4: 'bg_level4', 5: 'bg_level5', 6: 'bg_level4', 7: 'bg_level3', 8: 'bg_level2', 9: 'bg_level1', 10: 'background', 11: 'background' };
 
+// Per level: true = endless scrolling, false = scroll stopt aan het einde (adelaar kan wel terug naar links)
+const LEVEL_ENDLESS_SCROLL = { 1: true, 2: true, 3: false, 4: true, 5: true, 6: true, 7: true, 8: true, 9: true, 10: true, 11: true };
+
 const assets = {
     background: { src: BACKGROUND_URL, canvas: document.createElement('canvas'), loaded: false, label: 'Achtergrond' },
     bg_level1: { src: 'assets/bg_level1.png', canvas: document.createElement('canvas'), loaded: false, label: 'Achtergrond level 1' },
@@ -760,7 +763,13 @@ function update(dt) {
     let worldSpeedFactor = (player.dx < 0) ? 0.3 : 1.0;
     const allBossesDefeated = activeBosses.length > 0 && activeBosses.every(b => b.isHit);
     let currentEffectiveWorldSpeed = (bossActive && !allBossesDefeated) ? 0 : BASE_WORLD_SPEED * worldSpeedFactor;
-    worldStep += currentEffectiveWorldSpeed;
+    const endlessScroll = LEVEL_ENDLESS_SCROLL[currentLevel] !== false;
+    if (endlessScroll) {
+        worldStep += currentEffectiveWorldSpeed;
+    } else {
+        if (player.dx > 0) worldStep += currentEffectiveWorldSpeed;
+        else if (player.dx < 0) worldStep = Math.max(0, worldStep - BASE_WORLD_SPEED * 0.3);
+    }
     player.x = Math.max(-50, Math.min((canvas.width/gameScale) - 100, player.x + player.dx));
     player.y = Math.max(-20, Math.min(VIRTUAL_HEIGHT / 1.8, player.y + player.dy));
     if (els.scoreText) els.scoreText.innerText = score;
@@ -1084,9 +1093,18 @@ function render() {
     const bgAsset = assets[bgKey];
     if (bgAsset && bgAsset.loaded) {
         const dw = Math.floor(VIRTUAL_HEIGHT * (bgAsset.canvas.width / bgAsset.canvas.height));
-        const sx = Math.floor((worldStep * 0.5) % dw);
-        ctx.drawImage(bgAsset.canvas, -sx, 0, dw, VIRTUAL_HEIGHT);
-        ctx.drawImage(bgAsset.canvas, dw - sx - 1, 0, dw + 1, VIRTUAL_HEIGHT);
+        const endless = LEVEL_ENDLESS_SCROLL[currentLevel] !== false;
+        let sx;
+        if (endless) {
+            sx = Math.floor((worldStep * 0.5) % dw);
+            ctx.drawImage(bgAsset.canvas, -sx, 0, dw, VIRTUAL_HEIGHT);
+            ctx.drawImage(bgAsset.canvas, dw - sx - 1, 0, dw + 1, VIRTUAL_HEIGHT);
+        } else {
+            const viewW = canvas.width / gameScale;
+            const maxScroll = Math.max(0, dw - viewW);
+            sx = Math.min(Math.floor(worldStep * 0.5), maxScroll);
+            ctx.drawImage(bgAsset.canvas, -sx, 0, dw, VIRTUAL_HEIGHT);
+        }
     }
     for (let t of targets) {
         const isHooligan = t.type === 'hooligan';
