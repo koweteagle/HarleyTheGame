@@ -281,6 +281,7 @@ const assets = {
     supA71: { src: 'assets/supA/supA-71.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter A run 71' },
     supA72: { src: 'assets/supA/supA-72.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter A run 72' },
     ...Object.fromEntries([1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28].map(n => ['supB' + n, { src: encodeURI('assets/supB/clideo_editor_f51fd73e3cfa47e690fefe457e5e8273-' + n + ' (gesleept).png'), canvas: document.createElement('canvas'), loaded: false, label: 'Supporter B run ' + n }])),
+    supBDown: { src: 'assets/supB/supBdown.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter B geraakt' },
     supC1: { src: 'assets/supC/supC1.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter C run 1' },
     supC2: { src: 'assets/supC/supC2.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter C run 2' },
     supC3: { src: 'assets/supC/supC3.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter C run 3' },
@@ -1113,7 +1114,7 @@ function render() {
         if (t.isHit) {
             sk = isHooligan
                 ? 'hooliHit'
-                : (t.variant === 4 ? 'supDDown' : t.variant === 3 ? 'supCDown' : 'normalHit');  // A en B gebruiken normalHit
+                : (t.variant === 4 ? 'supDDown' : t.variant === 3 ? 'supCDown' : t.variant === 2 ? 'supBDown' : 'normalHit');  // A=normalHit, B=supBDown
         } else {
             if (isHooligan) {
                 if (t.throwTimer > 70) {
@@ -1140,8 +1141,9 @@ function render() {
         if (assets[drawSk].loaded) {
             let sizeScaleX = 1, sizeScaleY = 1;
             if (drawSk === 'normalHit') {
-                sizeScaleX = (t.variant === 2 ? SUP_B_HIT_SCALE_X : SUP_A_HIT_SCALE_X);
-                sizeScaleY = (t.variant === 2 ? SUP_B_HIT_SCALE_Y : SUP_A_HIT_SCALE_Y);
+                sizeScaleX = SUP_A_HIT_SCALE_X; sizeScaleY = SUP_A_HIT_SCALE_Y;
+            } else if (drawSk === 'supBDown') {
+                sizeScaleX = SUP_B_HIT_SCALE_X; sizeScaleY = SUP_B_HIT_SCALE_Y;
             } else if (drawSk === 'supCDown') {
                 sizeScaleX = SUP_C_HIT_SCALE_X; sizeScaleY = SUP_C_HIT_SCALE_Y;
             } else if (drawSk === 'supDDown') {
