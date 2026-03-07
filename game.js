@@ -8,6 +8,8 @@ const LEVEL_WIN_AUDIO_URL = 'audio/forza eagles.wav';
 const LEVEL_GAMEOVER_AUDIO_URL = 'audio/always look.wav';
 const SOUND_EAGLE_URL = 'assets/soundeffects/eagle.mp3';
 const SOUND_POOP_URL = 'assets/soundeffects/schijt1.mp3';
+const SOUND_BOM_URL = 'assets/soundeffects/bom.mp3';
+const SOUND_SPRAY_URL = 'assets/soundeffects/spray.mp3';
 
 // Volume 0–1: achtergrondmuziek en sound effects (hier makkelijk in te stellen)
 const VOLUME_MUSIC = 0.2;
@@ -71,7 +73,11 @@ gameOverAudio.volume = VOLUME_MUSIC;
 const soundEagle = new Audio(SOUND_EAGLE_URL);
 soundEagle.volume = VOLUME_SFX;
 const soundPoop = new Audio(SOUND_POOP_URL);
-soundPoop.volume = VOLUME_SFX; 
+soundPoop.volume = VOLUME_SFX;
+const soundBom = new Audio(SOUND_BOM_URL);
+soundBom.volume = VOLUME_SFX;
+const soundSpray = new Audio(SOUND_SPRAY_URL);
+soundSpray.volume = VOLUME_SFX; 
 
 // --- 2. STATE ---
 let gameScale = 1;
@@ -619,8 +625,16 @@ function createSplat(x, y, radius, type) {
 
 function executePoop(type) {
     if(!gameActive || player.isDead) return;
-    soundPoop.currentTime = 0;
-    soundPoop.play().catch(() => {});
+    if (type === 'NORMAL') {
+        soundPoop.currentTime = 0;
+        soundPoop.play().catch(() => {});
+    } else if (type === 'POEPBOM') {
+        soundBom.currentTime = 0;
+        soundBom.play().catch(() => {});
+    } else if (type === 'DIARREE') {
+        soundSpray.currentTime = 0;
+        soundSpray.play().catch(() => {});
+    }
     const px = player.x + 110, py = player.y + 80;
     if(type === 'DIARREE') {
         for(let i=0; i<4; i++) setTimeout(() => poops.push({ x: px, y: py, radius: 8, speedY: 18, speedX: (i-1.5)*4, type:'NORMAL' }), i * 60);
@@ -1294,7 +1308,7 @@ const bind = (id, fn) => {
 
 bind('start-btn', async () => { 
     if(gameActive) return; 
-    [levelAudio, winAudio, gameOverAudio, soundEagle, soundPoop].forEach(a => { a.play().then(() => { a.pause(); a.currentTime = 0; }).catch(() => {}); });
+    [levelAudio, winAudio, gameOverAudio, soundEagle, soundPoop, soundBom, soundSpray].forEach(a => { a.play().then(() => { a.pause(); a.currentTime = 0; }).catch(() => {}); });
     await requestLandscape();
     await loadLevelAssets(1);
     score = 0; levelScoreStart = 0; currentLevel = 1;
