@@ -158,7 +158,7 @@ const SUP_NORMAL_BASE_SPEED = 8;      // basissnelheid
 const SUP_NORMAL_SPEED_RANGE = 4;     // extra random snelheid (0..range)
 const SUP_A_SPEED_MULT = 0.8;         // factor voor supporter A (variant 1)
 const SUP_B_SPEED_MULT = 0.79;        // factor voor supporter B (variant 2)
-const SUP_C_SPEED_MULT = 0.2;         // factor voor supporter C (variant 3)
+const SUP_C_SPEED_MULT = 0.8;         // factor voor supporter C (variant 3)
 const SUP_D_SPEED_MULT = 1.25;        // factor voor supporter D (variant 4) – iets sneller
 
 // Hooligans
@@ -858,7 +858,7 @@ function update(dt) {
                 variant === 3 ? SUP_C_SPEED_MULT :
                 SUP_D_SPEED_MULT;
             const animFrames = variant === 1 ? 72 : variant === 2 ? 28 : variant === 3 ? 10 : 9;
-            const animSpd = variant === 3 ? 0.5 : variant === 4 ? 0.12 : variant === 2 ? 0.12 : 0.2;  // supC sneller zodat loop vloeiend zichtbaar
+            const animSpd = variant === 3 ? 0.1 : variant === 4 ? 0.12 : variant === 2 ? 0.12 : 0.2;  // supC sneller zodat loop vloeiend zichtbaar
             targets.push({
                 type: 'normal',
                 x: -160,
