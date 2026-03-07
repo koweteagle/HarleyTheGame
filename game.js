@@ -360,7 +360,7 @@ const HOOLI_SCALE_Y = 1.2;
 // --- Schaal geraakt-/down-afbeelding (aparte X,Y per type) ---
 const SUP_A_HIT_SCALE_X = 1.35;
 const SUP_A_HIT_SCALE_Y = 1.35;
-const SUP_B_HIT_SCALE_X = 1.35;
+const SUP_B_HIT_SCALE_X = 1.7;
 const SUP_B_HIT_SCALE_Y = 1.35;
 const SUP_C_HIT_SCALE_X = 2.0;
 const SUP_C_HIT_SCALE_Y = 1.8;
