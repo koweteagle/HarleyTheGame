@@ -6,6 +6,8 @@ const BACKGROUND_URL = 'assets/bg2.jpg';
 const LEVEL_START_AUDIO_URL = 'audio/music.mp3';
 const LEVEL_WIN_AUDIO_URL = 'audio/forza eagles.wav';
 const LEVEL_GAMEOVER_AUDIO_URL = 'audio/always look.wav';
+const SOUND_EAGLE_URL = 'assets/soundeffects/eagle.mp3';
+const SOUND_POOP_URL = 'assets/soundeffects/schijt1.mp3';
 const VIRTUAL_HEIGHT = 1080;
 const VIRTUAL_WIDTH = 1920;
 const POINTS_TO_BOSS = 2500;
@@ -57,7 +59,9 @@ const bgImg = new Image();
 const levelAudio = new Audio(LEVEL_START_AUDIO_URL);
 levelAudio.loop = true;
 const winAudio = new Audio(LEVEL_WIN_AUDIO_URL);
-const gameOverAudio = new Audio(LEVEL_GAMEOVER_AUDIO_URL); 
+const gameOverAudio = new Audio(LEVEL_GAMEOVER_AUDIO_URL);
+const soundEagle = new Audio(SOUND_EAGLE_URL);
+const soundPoop = new Audio(SOUND_POOP_URL); 
 
 // --- 2. STATE ---
 let gameScale = 1;
@@ -74,6 +78,10 @@ let score = 0;
 let levelScoreStart = 0;
 let worldStep = 0;
 let bossActive = false;
+
+// Willekeurig adelaar-geluid tijdens spel (interval 20–50 sec)
+let eagleSoundTimer = 0;
+let nextEagleDelay = 20000 + Math.random() * 30000;
    
 let poops = [];
 let splats = [];
@@ -601,6 +609,8 @@ function createSplat(x, y, radius, type) {
 
 function executePoop(type) {
     if(!gameActive || player.isDead) return;
+    soundPoop.currentTime = 0;
+    soundPoop.play().catch(() => {});
     const px = player.x + 110, py = player.y + 80;
     if(type === 'DIARREE') {
         for(let i=0; i<4; i++) setTimeout(() => poops.push({ x: px, y: py, radius: 8, speedY: 18, speedX: (i-1.5)*4, type:'NORMAL' }), i * 60);
@@ -626,6 +636,8 @@ function resetGame() {
     player.activeWeapons = { 'DIARREE': 0, 'POEPBOM': 0 };
     poops = []; splats = []; targets = []; powerUps = []; beerGlasses = []; activeBosses = [];
     bossActive = false; worldStep = 0; gameActive = true;
+    eagleSoundTimer = 0;
+    nextEagleDelay = 20000 + Math.random() * 30000;
     if (els.healthBar) els.healthBar.style.width = '100%';
     if (els.bossHealthContainer) els.bossHealthContainer.style.display = 'none';
     if (els.gameOverScreen) els.gameOverScreen.style.display = 'none';
@@ -683,6 +695,14 @@ function update(dt) {
         if(keys['Space'] && player.shootCooldown <= 0) { executePoop('NORMAL'); player.shootCooldown = 15; }
     }
     if(player.shootCooldown > 0) player.shootCooldown--;
+    // Willekeurig adelaar-geluid
+    eagleSoundTimer += (typeof dt === 'number' ? dt : 16);
+    if (eagleSoundTimer >= nextEagleDelay) {
+        eagleSoundTimer = 0;
+        nextEagleDelay = 20000 + Math.random() * 30000;
+        soundEagle.currentTime = 0;
+        soundEagle.play().catch(() => {});
+    }
     let worldSpeedFactor = (player.dx < 0) ? 0.3 : 1.0;
     const allBossesDefeated = activeBosses.length > 0 && activeBosses.every(b => b.isHit);
     let currentEffectiveWorldSpeed = (bossActive && !allBossesDefeated) ? 0 : BASE_WORLD_SPEED * worldSpeedFactor;
