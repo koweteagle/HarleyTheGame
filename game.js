@@ -673,6 +673,8 @@ function resetGame() {
     winAudio.pause(); winAudio.currentTime = 0;
     gameOverAudio.pause(); gameOverAudio.currentTime = 0;
     if (levelAudio.paused) levelAudio.play().catch(() => {});
+    soundEagle.currentTime = 0;
+    soundEagle.play().catch(() => {});
 }
 
 function getHighScore() {
