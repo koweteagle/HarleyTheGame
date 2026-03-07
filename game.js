@@ -350,6 +350,7 @@ const SUP_B_SCALE_X = 3.5;
 const SUP_B_SCALE_Y = 1.7;
 const SUP_C_SCALE_X = 3.6;
 const SUP_C_SCALE_Y = 1.8;
+const SUP_C_RUN_Y_OFFSET = 85;  // supC run-sprites hebben ruimte onderaan; offset zodat voeten op stoep staan
 const SUP_D_SCALE_X = 1.7;
 const SUP_D_SCALE_Y = 1.2; 
 const HOOLI_SCALE_X = 1.2;
@@ -1110,7 +1111,8 @@ function render() {
     
         // Teken rond het midden van de sprite
         const hitYOffset = (t.isHit && t.variant === 3) ? 125 : (t.isHit && (t.variant === 1 || t.variant === 2 || t.variant === 4)) ? 65 : (t.isHit ? 28 : 0);  // supA/supB/supC/supD op stoep, supC lager
-        ctx.translate(t.x + halfW, VIRTUAL_HEIGHT - 50 + hitYOffset);
+        const runYOffset = (!t.isHit && t.variant === 3) ? SUP_C_RUN_Y_OFFSET : 0;  // supC run: naar beneden zodat niet zweven
+        ctx.translate(t.x + halfW, VIRTUAL_HEIGHT - 50 + hitYOffset + runYOffset);
     
         // Spiegelen
         ctx.scale(scaleX, 1);
