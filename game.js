@@ -119,7 +119,12 @@ let bossActive = false;
 // Willekeurig adelaar-geluid tijdens spel (interval 20–50 sec)
 let eagleSoundTimer = 0;
 let nextEagleDelay = 20000 + Math.random() * 30000;
-   
+
+// Bij LEVEL_ENDLESS_SCROLL = false: automatisch rechts → wachten → links scrollen
+let scrollPhase = 'right';   // 'right' | 'wait' | 'left'
+let scrollWaitUntil = 0;    // timestamp wanneer wachten eindigt
+let scrollPhaseWas = 'right'; // na wait: naar 'left' of terug naar 'right'
+
 let poops = [];
 let splats = [];
 let targets = [];
@@ -693,6 +698,11 @@ function resetGame() {
     bossActive = false; worldStep = 0; gameActive = true;
     eagleSoundTimer = 0;
     nextEagleDelay = 20000 + Math.random() * 30000;
+    if (LEVEL_ENDLESS_SCROLL[currentLevel] === false) {
+        scrollPhase = 'right';
+        scrollWaitUntil = 0;
+        scrollPhaseWas = 'right';
+    }
     if (els.healthBar) els.healthBar.style.width = '100%';
     if (els.bossHealthContainer) els.bossHealthContainer.style.display = 'none';
     if (els.gameOverScreen) els.gameOverScreen.style.display = 'none';
@@ -762,13 +772,42 @@ function update(dt) {
     }
     let worldSpeedFactor = (player.dx < 0) ? 0.3 : 1.0;
     const allBossesDefeated = activeBosses.length > 0 && activeBosses.every(b => b.isHit);
-    let currentEffectiveWorldSpeed = (bossActive && !allBossesDefeated) ? 0 : BASE_WORLD_SPEED * worldSpeedFactor;
     const endlessScroll = LEVEL_ENDLESS_SCROLL[currentLevel] !== false;
+    const autoScrollSpeed = BASE_WORLD_SPEED * 0.85;
+    let currentEffectiveWorldSpeed;
     if (endlessScroll) {
+        currentEffectiveWorldSpeed = (bossActive && !allBossesDefeated) ? 0 : BASE_WORLD_SPEED * worldSpeedFactor;
         worldStep += currentEffectiveWorldSpeed;
     } else {
-        if (player.dx > 0) worldStep += currentEffectiveWorldSpeed;
-        else if (player.dx < 0) worldStep = Math.max(0, worldStep - BASE_WORLD_SPEED * 0.3);
+        const bgKey = LEVEL_BG_KEYS[currentLevel] || 'background';
+        const bgAsset = assets[bgKey];
+        const maxScroll = bgAsset && bgAsset.loaded
+            ? Math.max(0, Math.floor(VIRTUAL_HEIGHT * (bgAsset.canvas.width / bgAsset.canvas.height)) - canvas.width / gameScale)
+            : 9999;
+        const sx = (worldStep * 0.5);
+        if (scrollPhase === 'right') {
+            currentEffectiveWorldSpeed = (bossActive && !allBossesDefeated) ? 0 : autoScrollSpeed;
+            worldStep += currentEffectiveWorldSpeed;
+            if (sx >= maxScroll) {
+                worldStep = maxScroll * 2;
+                scrollPhase = 'wait';
+                scrollWaitUntil = Date.now() + 2200;
+                scrollPhaseWas = 'right';
+            }
+        } else if (scrollPhase === 'wait') {
+            currentEffectiveWorldSpeed = 0;
+            if (Date.now() >= scrollWaitUntil) {
+                scrollPhase = scrollPhaseWas === 'right' ? 'left' : 'right';
+            }
+        } else {
+            currentEffectiveWorldSpeed = (bossActive && !allBossesDefeated) ? 0 : -autoScrollSpeed;
+            worldStep = Math.max(0, worldStep + currentEffectiveWorldSpeed);
+            if (worldStep <= 0) {
+                scrollPhase = 'wait';
+                scrollWaitUntil = Date.now() + 2200;
+                scrollPhaseWas = 'left';
+            }
+        }
     }
     player.x = Math.max(-50, Math.min((canvas.width/gameScale) - 100, player.x + player.dx));
     player.y = Math.max(-20, Math.min(VIRTUAL_HEIGHT / 1.8, player.y + player.dy));
