@@ -1402,6 +1402,18 @@ bind('settings-btn', () => {
 bind('close-settings-btn', () => { if (els.settingsModal) els.settingsModal.style.display = 'none'; });
 bind('ios-later-btn', () => { if (els.iosModal) els.iosModal.style.display = 'none'; });
 
+async function startLevel(n) {
+    if (!IS_DEBUG) return;
+    await loadLevelAssets(n);
+    currentLevel = n;
+    levelScoreStart = (n - 1) * POINTS_TO_BOSS;
+    score = levelScoreStart;
+    resetGame();
+    if (els.startScreen) els.startScreen.style.display = 'none';
+    lastTime = 0;
+    animationFrameId = requestAnimationFrame(gameLoop);
+}
+
 async function forceLevel(n) {
     if (!IS_DEBUG) return;
     await loadLevelAssets(n);
@@ -1415,7 +1427,7 @@ async function forceLevel(n) {
 }
 
 // Expose only in debug mode (handy in console)
-if (IS_DEBUG) window.forceLevel = forceLevel;
+if (IS_DEBUG) { window.forceLevel = forceLevel; window.startLevel = startLevel; }
 
 window.addEventListener('load', () => {
     preload();
@@ -1444,6 +1456,15 @@ window.addEventListener('load', () => {
     }
 
     if (IS_DEBUG) {
+        document.querySelectorAll('.debug-start-level-btn[data-level]').forEach((btn) => {
+            const handler = async (e) => {
+                e.preventDefault();
+                const lvl = Number(btn.getAttribute('data-level'));
+                if (Number.isFinite(lvl)) await startLevel(lvl);
+            };
+            btn.addEventListener('pointerdown', handler, { passive: false });
+            btn.addEventListener('click', (e) => { e.preventDefault(); if (Date.now() - lastTouchTs < 600) return; handler(e); });
+        });
         document.querySelectorAll('.debug-level-btn[data-level]').forEach((btn) => {
             const handler = async (e) => {
                 e.preventDefault();

@@ -81,13 +81,25 @@ canvas { display: block; image-rendering: pixelated; }
 
 #debug-panel {
     position: absolute; top: 80px; right: 15px; z-index: 50;
-    display: flex; flex-wrap: wrap; width: 220px; gap: 4px; justify-content: flex-end;
+    display: flex; flex-direction: column; gap: 6px; width: 220px; align-items: flex-end;
+}
+
+.debug-panel-row {
+    display: flex; flex-wrap: wrap; gap: 4px; justify-content: flex-end; align-items: center;
+}
+
+.debug-label {
+    font-size: 9px; color: rgba(255,255,255,0.9); margin-right: 4px;
 }
 
 .debug-btn {
     background: rgba(255, 0, 0, 0.6); color: white; border: 1px solid white;
     padding: 4px 6px; font-family: inherit; font-size: 9px; cursor: pointer; border-radius: 4px;
     pointer-events: auto;
+}
+
+.debug-start-level-btn {
+    background: rgba(0, 150, 0, 0.7); border-color: rgba(255,255,255,0.8);
 }
 
 #health-container {
