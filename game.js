@@ -1358,11 +1358,15 @@ bind('info-btn', () => { if (els.infoModal) els.infoModal.style.display = 'flex'
 bind('close-info-btn', () => { if (els.infoModal) els.infoModal.style.display = 'none'; });
 bind('settings-btn', () => {
     if (!els.settingsModal) return;
-    if (els.musicSlider) els.musicSlider.value = Math.round(musicVolume * 100);
-    if (els.sfxSlider) els.sfxSlider.value = Math.round(sfxVolume * 100);
-    if (els.musicValue) els.musicValue.textContent = Math.round(musicVolume * 100) + '%';
-    if (els.sfxValue) els.sfxValue.textContent = Math.round(sfxVolume * 100) + '%';
     els.settingsModal.style.display = 'flex';
+    const musicVal = Math.round(musicVolume * 100);
+    const sfxVal = Math.round(sfxVolume * 100);
+    requestAnimationFrame(() => {
+        if (els.musicSlider) { els.musicSlider.value = String(musicVal); }
+        if (els.sfxSlider) { els.sfxSlider.value = String(sfxVal); }
+        if (els.musicValue) els.musicValue.textContent = musicVal + '%';
+        if (els.sfxValue) els.sfxValue.textContent = sfxVal + '%';
+    });
 });
 bind('close-settings-btn', () => { if (els.settingsModal) els.settingsModal.style.display = 'none'; });
 bind('ios-later-btn', () => { if (els.iosModal) els.iosModal.style.display = 'none'; });
@@ -1388,7 +1392,7 @@ window.addEventListener('load', () => {
     initDebugUI();
     initExternalLinks();
     if (els.musicSlider) {
-        els.musicSlider.value = Math.round(musicVolume * 100);
+        els.musicSlider.value = String(Math.round(musicVolume * 100));
         els.musicSlider.addEventListener('input', () => {
             musicVolume = Number(els.musicSlider.value) / 100;
             try { localStorage.setItem(VOLUME_STORAGE_KEY_MUSIC, String(musicVolume)); } catch (e) {}
@@ -1398,7 +1402,7 @@ window.addEventListener('load', () => {
         if (els.musicValue) els.musicValue.textContent = Math.round(musicVolume * 100) + '%';
     }
     if (els.sfxSlider) {
-        els.sfxSlider.value = Math.round(sfxVolume * 100);
+        els.sfxSlider.value = String(Math.round(sfxVolume * 100));
         els.sfxSlider.addEventListener('input', () => {
             sfxVolume = Number(els.sfxSlider.value) / 100;
             try { localStorage.setItem(VOLUME_STORAGE_KEY_SFX, String(sfxVolume)); } catch (e) {}
