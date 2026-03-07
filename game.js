@@ -157,7 +157,7 @@ const levelBossConfig = {
 const SUP_NORMAL_BASE_SPEED = 8;      // basissnelheid
 const SUP_NORMAL_SPEED_RANGE = 4;     // extra random snelheid (0..range)
 const SUP_A_SPEED_MULT = 0.8;         // factor voor supporter A (variant 1)
-const SUP_B_SPEED_MULT = 0.77;        // factor voor supporter B (variant 2)
+const SUP_B_SPEED_MULT = 0.79;        // factor voor supporter B (variant 2)
 const SUP_C_SPEED_MULT = 1.0;         // factor voor supporter C (variant 3)
 const SUP_D_SPEED_MULT = 1.25;        // factor voor supporter D (variant 4) – iets sneller
 
@@ -454,13 +454,12 @@ async function loadAssets(keys, options = {}) {
 
 async function preloadCore() {
     const total = CORE_ASSET_KEYS.length;
-    let loadedCount = 0;
     updateLoadingBar(0, total);
     await loadAssets(CORE_ASSET_KEYS, {
         updateLoadingBar: true,
-        timeoutMs: 15000
+        timeoutMs: 60000
     });
-    loadedCount = CORE_ASSET_KEYS.filter(k => assets[k] && assets[k].loaded).length;
+    const loadedCount = CORE_ASSET_KEYS.filter(k => assets[k] && assets[k].loaded).length;
     updateLoadingBar(loadedCount, total);
     if (assets.background && assets.background.loaded) bgImg.src = assets.background.src;
     if (els.loadingText) els.loadingText.style.display = 'none';
