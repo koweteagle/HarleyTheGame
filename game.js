@@ -343,9 +343,30 @@ const assets = {
     ...Object.fromEntries([1,2,3,4,5,6,7,8,9,10,11,12].map(n => ['zwolfRun' + n, { src: encodeURI(`assets/zwolfje/rennen/Laat_hem_bakstenen_omhoog_gooien (1)-${n} (gesleept).png`), canvas: document.createElement('canvas'), loaded: false, label: 'Zwolfje ren ' + n }])),
     ...Object.fromEntries([1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19].map(n => ['zwolfThrow' + n, { src: encodeURI(`assets/zwolfje/gooien/Laat_hem_bakstenen_omhoog_gooien-${n} (gesleept).png`), canvas: document.createElement('canvas'), loaded: false, label: 'Zwolfje gooit ' + n }])),
     ...Object.fromEntries([1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33].map(n => ['zwolfDown' + n, { src: encodeURI(`assets/zwolfje/down/Hij_wordt_geraakt_door_vogelpoep_valt_op_de-${n} (gesleept).png`), canvas: document.createElement('canvas'), loaded: false, label: 'Zwolfje down ' + n }])),
-    boss2: { src: 'assets/boer1.png', canvas: document.createElement('canvas'), loaded: false, name: "Diederik", label: 'Boss 2' },
-    boss2Throw: { src: 'assets/diedgooit.png', canvas: document.createElement('canvas'), loaded: false, label: 'Boss 2 Gooit' },
-    boss2Down: { src: 'assets/boer down.png', canvas: document.createElement('canvas'), loaded: false, label: 'Boss 2 Down' },
+
+    // Diederik (boer) – nieuwe animaties in assets/boer/loopt en assets/boer/gooit
+    ...Object.fromEntries([1,2,3,4,5,6,7,8,9,10,11,12].map(n => [
+        'boerRun' + n,
+        {
+            src: encodeURI(`assets/boer/loopt/boer gif-${n} (gesleept).png`),
+            canvas: document.createElement('canvas'),
+            loaded: false,
+            label: 'Diederik loopt ' + n
+        }
+    ])),
+    ...Object.fromEntries([1,2,3,4,5,6,7,8,9,10,11,12,13,14].map(n => [
+        'boerThrow' + n,
+        {
+            src: encodeURI(`assets/boer/gooit/boer gif-${n} (gesleept).png`),
+            canvas: document.createElement('canvas'),
+            loaded: false,
+            label: 'Diederik gooit ' + n
+        }
+    ])),
+    // Fallback / eerste frames voor eventueel bestaand gebruik
+    boss2: { src: encodeURI('assets/boer/loopt/boer gif-1 (gesleept).png'), canvas: document.createElement('canvas'), loaded: false, name: "Diederik", label: 'Boss 2' },
+    boss2Throw: { src: encodeURI('assets/boer/gooit/boer gif-1 (gesleept).png'), canvas: document.createElement('canvas'), loaded: false, label: 'Boss 2 Gooit' },
+    boss2Down: { src: encodeURI('assets/boer/down/boer down.png'), canvas: document.createElement('canvas'), loaded: false, label: 'Boss 2 Down' },
     boss3: { src: 'assets/bram1.png', canvas: document.createElement('canvas'), loaded: false, name: "Bram", label: 'Boss 3' },
     boss3Throw: { src: 'assets/bram schiet.png', canvas: document.createElement('canvas'), loaded: false, label: 'Boss 3 Schiet' },
     boss3Down: { src: 'assets/bram2.png', canvas: document.createElement('canvas'), loaded: false, label: 'Boss 3 Down' },
@@ -363,6 +384,8 @@ const CLOWN_DOWN_KEYS = ['clownDown1'].concat([2,3,4,5,6,7,8,9,10,11,12,13,14,15
 const ZWOLF_RUN_KEYS = [1,2,3,4,5,6,7,8,9,10,11,12].map(n => 'zwolfRun' + n);
 const ZWOLF_THROW_KEYS = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19].map(n => 'zwolfThrow' + n);
 const ZWOLF_DOWN_KEYS = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33].map(n => 'zwolfDown' + n);
+const BOER_RUN_KEYS = [1,2,3,4,5,6,7,8,9,10,11,12].map(n => 'boerRun' + n);
+const BOER_THROW_KEYS = [1,2,3,4,5,6,7,8,9,10,11,12,13,14].map(n => 'boerThrow' + n);
 const SUP_ARENT_KEYS = Array.from({ length: 72 }, (_, i) => 'supA' + (i + 1));
 const SUP_B_KEYS = Array.from({ length: 28 }, (_, i) => 'supB' + (i + 1));
 const SUP_C_KEYS = Array.from({ length: 10 }, (_, i) => 'supC' + (i + 1));
@@ -400,7 +423,7 @@ const BOSS_NAMES = { boss0: 'Clown', boss1: 'Zwolfje', boss2: 'Diederik', boss3:
 const BOSS_ASSET_KEYS = {
     boss0: ['boss0', ...CLOWN_LOOP_KEYS, ...CLOWN_THROW_KEYS, ...CLOWN_DOWN_KEYS],
     boss1: [...ZWOLF_RUN_KEYS, ...ZWOLF_THROW_KEYS, ...ZWOLF_DOWN_KEYS],
-    boss2: ['boss2', 'boss2Throw', 'boss2Down'],
+    boss2: [...BOER_RUN_KEYS, ...BOER_THROW_KEYS, 'boss2Down'],
     boss3: ['boss3', 'boss3Throw', 'boss3Down'],
     boss4: ['boss4', 'boss4Throw', 'boss4Eat', 'boss4Down']
 };
@@ -615,7 +638,8 @@ function spawnBoss() {
 
         laneIndex: i,
         targetX: laneCenters[i],
-        ...(t === 'boss0' || t === 'boss1' ? { animTime: 0, downAnimTime: 0 } : {})
+        ...(t === 'boss0' || t === 'boss1' ? { animTime: 0, downAnimTime: 0 } : {}),
+        ...(t === 'boss2' ? { animTime: 0 } : {})
     };
     });
 
@@ -1139,6 +1163,10 @@ function update(dt) {
             } else {
                 b.animTime = (b.animTime || 0) + 0.3;
             }
+        } else if (b.type === 'boss2') {
+            if (!b.isHit) {
+                b.animTime = (b.animTime || 0) + 0.25;
+            }
         }
     });
     for(let i=splats.length-1; i>=0; i--) { const s = splats[i]; s.x -= currentEffectiveWorldSpeed; s.y += s.vy; s.vy += 0.5; if(s.y > VIRTUAL_HEIGHT-50) { s.y = VIRTUAL_HEIGHT-50; s.vy = 0; } s.life -= s.decay; if(s.life <= 0) splats.splice(i,1); }
@@ -1319,6 +1347,20 @@ function render() {
             }
             if (!assets[sk] || !assets[sk].loaded) {
                 sk = b.isHit ? ZWOLF_DOWN_KEYS[0] : (b.throwVisualTimer > 0 ? ZWOLF_THROW_KEYS[0] : ZWOLF_RUN_KEYS[0]);
+            }
+        } else if (b.type === 'boss2') {
+            if (b.isHit) {
+                sk = 'boss2Down';
+            } else if (b.throwVisualTimer > 0) {
+                const throwProgress = 1 - (b.throwVisualTimer / 35);
+                const throwFrame = Math.min(Math.floor(throwProgress * BOER_THROW_KEYS.length), BOER_THROW_KEYS.length - 1);
+                sk = BOER_THROW_KEYS[throwFrame];
+            } else {
+                const loopFrame = Math.floor(b.animTime || 0) % BOER_RUN_KEYS.length;
+                sk = BOER_RUN_KEYS[loopFrame];
+            }
+            if (!assets[sk] || !assets[sk].loaded) {
+                sk = b.isHit ? 'boss2Down' : (b.throwVisualTimer > 0 ? BOER_THROW_KEYS[0] : BOER_RUN_KEYS[0]);
             }
         } else {
             sk = b.isHit
