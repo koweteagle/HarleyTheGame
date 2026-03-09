@@ -218,7 +218,7 @@ const SUP_D_SPAWN_WEIGHT = 25;
 const LEVEL_BG_KEYS = { 1: 'bg_level1', 2: 'bg_level2', 3: 'bg_level3', 4: 'bg_level4', 5: 'bg_level5', 6: 'bg_level4', 7: 'bg_level3', 8: 'bg_level2', 9: 'bg_level1', 10: 'background', 11: 'background' };
 
 // Per level: true = endless scrolling, false = scroll stopt aan het einde (adelaar kan wel terug naar links)
-const LEVEL_ENDLESS_SCROLL = { 1: true, 2: true, 3: false, 4: true, 5: true, 6: true, 7: true, 8: true, 9: true, 10: true, 11: true };
+const LEVEL_ENDLESS_SCROLL = { 1: true, 2: true, 3: false, 4: false, 5: true, 6: true, 7: true, 8: true, 9: true, 10: true, 11: true };
 
 const assets = {
     background: { src: BACKGROUND_URL, canvas: document.createElement('canvas'), loaded: false, label: 'Achtergrond' },
