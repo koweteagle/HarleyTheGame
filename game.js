@@ -204,12 +204,12 @@ const HOOLIGAN_VX_WORLD_OFFSET = 6;   // extra t.o.v. BASE_WORLD_SPEED voor vx
 // throwHitChance = kans 0–1 dat een worp de adelaar raakt (anders mis). throwDamage = schade aan adelaar bij treffer.
 const BOSS_CONFIG = {
     boss0: { width: 300, height: 350, scale: 1.8, speed: 2.5, downScale: 0.8,    downOffset: 0, offset: 25, mirrorFlip: true,  throwCount: 1, throwTimeToTarget: 80, throwHitChance: 0.5, throwDamage: 2 },
-    boss1: { width: 375, height: 450, scale: 1.5,   speed: 2.5, downScale: 1,      downOffset: 0, offset: 0,  mirrorFlip: true,  throwCount: 6, throwTimeToTarget: 100, throwHitChance: 0.3, throwDamage: 1 },
-    boss2: { width: 300, height: 400, scale: 1.5, speed: 2.5, downScale: 0.7,    downOffset: 0, offset: 0,  mirrorFlip: true,  throwCount: 2, throwTimeToTarget: 60,  throwHitChance: 0.7, throwDamage: 6 },
+    boss1: { width: 375, height: 450, scale: 1.3,   speed: 2.5, downScale: 1,      downOffset: 0, offset: 0,  mirrorFlip: true,  throwCount: 6, throwTimeToTarget: 100, throwHitChance: 0.3, throwDamage: 1 },
+    boss2: { width: 300, height: 400, scale: 1.4, speed: 2.5, downScale: 0.7,    downOffset: 0, offset: 0,  mirrorFlip: true,  throwCount: 2, throwTimeToTarget: 60,  throwHitChance: 0.7, throwDamage: 6 },
     boss3: { width: 350, height: 350, scale: 1.4, speed: 2.5, downScale: 0.7,    downOffset: 0, offset: 0,  mirrorFlip: true,  throwCount: 1, throwTimeToTarget: 50,  throwHitChance: 0.8, throwDamage: 6 },
     boss4: { width: 260, height: 420, scale: 1.4, speed: 2.5, downScale: 0.75,   downOffset: 0, offset: 0,  mirrorFlip: true, throwCount: 2, throwTimeToTarget: 55,  throwHitChance: 0.7, throwDamage: 7 }, // Peperbus
     boss5: { width: 250, height: 350, scale: 1.6, speed: 2.5, downScale: 0.8,    downOffset: 0, offset: 0,  mirrorFlip: true, throwCount: 1, throwTimeToTarget: 50,  throwHitChance: 0.8, throwDamage: 8 }, // Dominguez
-    boss6: { width: 220, height: 380, scale: 1.2, speed: 2.5, downScale: 0.8,    downOffset: 0, offset: 0,  mirrorFlip: true, throwCount: 1, throwTimeToTarget: 50,  throwHitChance: 0.65, throwDamage: 5 }  // ME – gooit stok
+    boss6: { width: 240, height: 380, scale: 1.2, speed: 2.5, downScale: 0.8,    downOffset: 0, offset: 0,  mirrorFlip: true, throwCount: 1, throwTimeToTarget: 50,  throwHitChance: 0.65, throwDamage: 5 }  // ME – gooit stok
 };
 function getBossConfig(type) {
     return BOSS_CONFIG[type] || { width: 250, height: 350, scale: 1, speed: 2.5, downScale: 1, downOffset: 0, offset: 0, mirrorFlip: false, throwCount: 1, throwTimeToTarget: 50, throwHitChance: 0.7, throwDamage: 6 };
