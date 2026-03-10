@@ -44,6 +44,7 @@ const els = {
     bossHealthBar: document.getElementById('boss-health-bar'),
     bossHealthContainer: document.getElementById('boss-health-container'),
     bossSummaryContainer: document.getElementById('boss-summary-container'),
+    gameOverBossContainer: document.getElementById('game-over-boss-container'),
     closeInfoBtn: document.getElementById('close-info-btn'),
     debugPanel: document.getElementById('debug-panel'),
     failedAssetsContainer: document.getElementById('failed-assets-container'),
@@ -894,6 +895,19 @@ function showLevelUp() {
         if (els.levelUpScreen) els.levelUpScreen.style.display = 'none';
         if (els.gameOverTitle) els.gameOverTitle.textContent = 'Spel uitgespeeld!';
         if (els.finalScore) els.finalScore.innerText = score;
+
+        // Toon verslagen eindbaas/bazen ook op het eindscherm
+        if (els.gameOverBossContainer) {
+            const bossContainer = els.gameOverBossContainer;
+            bossContainer.innerHTML = '';
+            cfg.forEach(c => {
+                const img = document.createElement('img');
+                img.src = assets[bossDownMap[c]]?.src || assets[c].src;
+                img.className = 'boss-summary-img';
+                bossContainer.appendChild(img);
+            });
+        }
+
         const newHigh = setHighScore(score);
         const highEl = document.getElementById('high-score-value');
         if (highEl) highEl.innerText = newHigh;
@@ -954,7 +968,8 @@ function drawTinted(spriteCanvas, x, y, w, h, flash) {
     if(flash > 0) {
         ctx.save();
         ctx.globalCompositeOperation = 'source-atop';
-        ctx.fillStyle = `rgba(255, 0, 0, ${0.4 + (flash/25)})`;
+        const alpha = Math.min(0.6, 0.2 + (flash / 40)); // nooit volledig rood vlak
+        ctx.fillStyle = `rgba(255, 0, 0, ${alpha})`;
         ctx.fillRect(x, y, w, h);
         ctx.restore();
     }
@@ -1060,6 +1075,9 @@ function update(dt) {
             levelAudio.pause(); 
             levelAudio.currentTime = 0;
             gameOverAudio.play().catch(() => {});
+
+            // Normale game over: geen eindbaas-afbeelding tonen op dit scherm
+            if (els.gameOverBossContainer) els.gameOverBossContainer.innerHTML = '';
 
             if (els.gameOverTitle) els.gameOverTitle.textContent = 'Eagle down.';
             if (els.finalScore) els.finalScore.innerText = score;
