@@ -963,25 +963,37 @@ async function requestLandscape() {
 }
 
 function drawTinted(spriteCanvas, x, y, w, h, flash) {
-    if(!spriteCanvas || !spriteCanvas.width) return;
-    ctx.drawImage(spriteCanvas, x, y, w, h);
-    if(flash > 0) {
-        // Gebruik een offscreen canvas als masker zodat alleen de niet-transparante
-        // pixels van de sprite rood oplichten, niet een volledig rechthoekig vlak.
-        // Optimalisatie t.o.v. de oude versie: alleen resizen als het nodig is.
-        if (spriteCanvas.width > tintCanvas.width || spriteCanvas.height > tintCanvas.height) {
-            tintCanvas.width = spriteCanvas.width;
-            tintCanvas.height = spriteCanvas.height;
-        }
-        tintCtx.clearRect(0, 0, tintCanvas.width, tintCanvas.height);
-        tintCtx.drawImage(spriteCanvas, 0, 0);
-        tintCtx.globalCompositeOperation = 'source-in';
-        const alpha = Math.min(0.6, 0.2 + (flash / 40));
-        tintCtx.fillStyle = `rgba(255, 0, 0, ${alpha})`;
-        tintCtx.fillRect(0, 0, tintCanvas.width, tintCanvas.height);
-        tintCtx.globalCompositeOperation = 'source-over';
-        ctx.drawImage(tintCanvas, x, y, w, h);
+    if (!spriteCanvas || !spriteCanvas.width) return;
+
+    // Intensiteit 0..1 op basis van hitFlash (typisch 0..15)
+    const intensity = Math.max(0, Math.min(1, flash / 15));
+
+    // Geen hitflash: normale sprite
+    if (intensity <= 0) {
+        ctx.drawImage(spriteCanvas, x, y, w, h);
+        return;
     }
+
+    // Zorg dat tintCanvas exact de grootte van de bron-sprite heeft
+    if (tintCanvas.width !== spriteCanvas.width || tintCanvas.height !== spriteCanvas.height) {
+        tintCanvas.width = spriteCanvas.width;
+        tintCanvas.height = spriteCanvas.height;
+    }
+
+    // Maak een volledig rode versie van de sprite (alleen binnen de alpha van de sprite zelf)
+    tintCtx.clearRect(0, 0, tintCanvas.width, tintCanvas.height);
+    tintCtx.drawImage(spriteCanvas, 0, 0);
+    tintCtx.globalCompositeOperation = 'source-in';
+    tintCtx.fillStyle = 'rgba(255, 0, 0, 1)';
+    tintCtx.fillRect(0, 0, tintCanvas.width, tintCanvas.height);
+    tintCtx.globalCompositeOperation = 'source-over';
+
+    // Eerst origineel tekenen, dan rode overlay met alpha op basis van intensiteit
+    ctx.save();
+    ctx.drawImage(spriteCanvas, x, y, w, h);
+    ctx.globalAlpha = 0.4 + 0.4 * intensity; // tussen 0.4 en 0.8
+    ctx.drawImage(tintCanvas, x, y, w, h);
+    ctx.restore();
 }
 
 function createSplat(x, y, radius, type) {
