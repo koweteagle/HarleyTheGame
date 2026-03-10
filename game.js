@@ -144,11 +144,13 @@ let scrollPhase = 'right';   // 'right' | 'wait' | 'left'
 let scrollWaitUntil = 0;    // timestamp wanneer wachten eindigt
 let scrollPhaseWas = 'right'; // na wait: naar 'left' of terug naar 'right'
 
-// Burst-fire: max 5 snelle schoten, daarna even bijladen (performance)
+// Burst-fire: max 5 schoten achter elkaar (of binnen BURST_RESET_MS), daarna bijladen
 const BURST_SIZE = 5;
 const BURST_RELOAD_MS = 1000;
+const BURST_RESET_MS = 2500;  // na zo veel ms zonder schot: burst vult weer naar 5 (geen herladen)
 let burstShotsLeft = BURST_SIZE;
-let reloadUntil = 0;  // timestamp wanneer herladen klaar is
+let reloadUntil = 0;
+let lastShotTime = 0;  // timestamp laatste schot (0 = nog niet geschoten)
 
 // Framerate-detectie: bij lage fps tijdelijk minder zware effecten tekenen
 let fpsHistory = [];
@@ -549,12 +551,17 @@ function executePoop(type) {
             reloadUntil = 0;
             burstShotsLeft = BURST_SIZE;
         }
+        // Lang genoeg niets geschoten? Burst vult weer aan (geen herladen nodig)
+        if (lastShotTime > 0 && (now - lastShotTime) > BURST_RESET_MS) {
+            burstShotsLeft = BURST_SIZE;
+        }
         if (burstShotsLeft <= 0) {
             reloadUntil = now + BURST_RELOAD_MS;
             if (els.fireBtn) els.fireBtn.classList.add('reloading');
             return;
         }
         burstShotsLeft--;
+        lastShotTime = now;
         soundPoop.currentTime = 0;
         soundPoop.play().catch(() => {});
     } else if (type === 'POEPBOM') {
@@ -589,6 +596,7 @@ function resetGame() {
     player.activeWeapons = { 'DIARREE': 0, 'POEPBOM': 0 };
     burstShotsLeft = BURST_SIZE;
     reloadUntil = 0;
+    lastShotTime = 0;
     if (els.fireBtn) els.fireBtn.classList.remove('reloading');
     poops = [];
     splatPool.forEach(s => { s.active = false; });
