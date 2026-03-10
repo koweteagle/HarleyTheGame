@@ -20,6 +20,7 @@ const LEVEL_MUSIC_URL = {
     9: LEVEL_START_AUDIO_URL,
     10: LEVEL_START_AUDIO_URL
 };
+const SILENT_AUDIO_URL = 'audio/500-milliseconds-of-silence.mp3';
 const SOUND_EAGLE_URL = 'assets/soundeffects/eagle.mp3';
 const SOUND_POOP_URL = 'assets/soundeffects/schijt1.mp3';
 const SOUND_BOM_URL = 'assets/soundeffects/bom.mp3';
@@ -118,6 +119,7 @@ const bgImg = new Image();
    
 const levelAudio = new Audio(LEVEL_START_AUDIO_URL);
 levelAudio.loop = true;
+const silentUnlockAudio = new Audio(SILENT_AUDIO_URL);
 const winAudio = new Audio(LEVEL_WIN_AUDIO_URL);
 const gameOverAudio = new Audio(LEVEL_GAMEOVER_AUDIO_URL);
 const soundEagle = new Audio(SOUND_EAGLE_URL);
@@ -1933,12 +1935,9 @@ const bind = (id, fn) => {
 
 bind('start-btn', async () => { 
     if(gameActive) return; 
-    // Audio-unlock: korte 'tik' op alle audio-elementen (met tijdelijk volume 0)
-    [levelAudio, winAudio, gameOverAudio, soundEagle, soundPoop, soundBom, soundSpray].forEach(a => {
-        const prevVol = a.volume;
-        a.volume = 0;
-        a.play().then(() => { a.pause(); a.currentTime = 0; a.volume = prevVol; }).catch(() => { a.volume = prevVol; });
-    });
+    // Audio-unlock voor iOS: speel één keer stille clip (geen echte geluiden, werkt ook als volume=0 genegeerd wordt)
+    silentUnlockAudio.currentTime = 0;
+    silentUnlockAudio.play().catch(() => {});
     await requestLandscape();
     await loadLevelAssets(1);
     // iOS PWA: viewport kan na fullscreen nog wijzigen; forceer extra resize
