@@ -1,67 +1,33 @@
-(() => {
 'use strict';
 
-// --- 1. CONFIGURATIE ---
-const BACKGROUND_URL = 'assets/bg2.jpg';
-const LEVEL_START_AUDIO_URL = 'audio/music.mp3';
-const LEVEL_WIN_AUDIO_URL = 'audio/forza eagles.wav';
-const LEVEL_GAMEOVER_AUDIO_URL = 'audio/always look.wav';
+import {
+    BACKGROUND_URL, LEVEL_START_AUDIO_URL, LEVEL_WIN_AUDIO_URL, LEVEL_GAMEOVER_AUDIO_URL,
+    LEVEL_MUSIC_URL, SILENT_AUDIO_URL, UNLOCK_CODE_HASH, SOUND_EAGLE_URL, SOUND_POOP_URL, SOUND_BOM_URL, SOUND_SPRAY_URL,
+    DEFAULT_VOLUME_MUSIC, DEFAULT_VOLUME_SFX, VOLUME_STORAGE_KEY_MUSIC, VOLUME_STORAGE_KEY_SFX, getStoredVolume,
+    VIRTUAL_HEIGHT, VIRTUAL_WIDTH, MOBILE_MAX_CANVAS_WIDTH, MOBILE_MAX_CANVAS_HEIGHT, MAX_DEVICE_PIXEL_RATIO,
+    POINTS_TO_BOSS, BASE_WORLD_SPEED, HIGH_SCORE_KEY, UNLOCK_ALL_LEVELS_KEY, isDebugEnabled,
+    SNACKS, levelBossConfig, SUP_NORMAL_BASE_SPEED, SUP_NORMAL_SPEED_RANGE, SUP_A_SPEED_MULT, SUP_B_SPEED_MULT, SUP_C_SPEED_MULT, SUP_D_SPEED_MULT,
+    HOOLIGAN_BASE_SPEED, HOOLIGAN_SPEED_RANGE, HOOLIGAN_SPEEDMULT_MIN, HOOLIGAN_SPEEDMULT_MAX, HOOLIGAN_VX_WORLD_OFFSET,
+    HOOLIGAN_CHANCE_LEVEL1, HOOLIGAN_CHANCE_MAX, SUP_A_SPAWN_WEIGHT, SUP_B_SPAWN_WEIGHT, SUP_C_SPAWN_WEIGHT, SUP_D_SPAWN_WEIGHT,
+    BOSS_CONFIG, getBossConfig, LEVEL_BG_KEYS, LEVEL_ENDLESS_SCROLL, LEVEL_SCROLL_START_RIGHT, LEVEL_ENDLESS_SCROLL_LEFT, LEVEL_SCROLL_WAIT_MS, DEFAULT_SCROLL_WAIT_MS,
+    getLevelAssetKeys, LEVEL_SPECIFIC_KEYS, FPS_HISTORY_LEN, FPS_LOW_THRESHOLD, FPS_RECOVER_THRESHOLD, LOW_FPS_FRAMES_TO_REDUCE, HIGH_FPS_FRAMES_TO_RECOVER, MAX_SPLATS_WHEN_REDUCED,
+    SUP_ARENT_KEYS, SUP_B_KEYS, SUP_C_KEYS, SUP_D_KEYS,
+    HOOLI_RUN_KEYS, HOOLI_THROW_KEYS,
+    CLOWN_LOOP_KEYS, CLOWN_THROW_KEYS, CLOWN_DOWN_KEYS,
+    ZWOLF_RUN_KEYS, ZWOLF_THROW_KEYS, ZWOLF_DOWN_KEYS,
+    DOM_RUN_KEYS, DOM_THROW_KEYS,
+    SUP_A_SCALE_X, SUP_A_SCALE_Y, SUP_B_SCALE_X, SUP_B_SCALE_Y, SUP_C_SCALE_X, SUP_C_SCALE_Y, SUP_C_RUN_Y_OFFSET, SUP_D_SCALE_X, SUP_D_SCALE_Y,
+    HOOLI_SCALE_X, HOOLI_SCALE_Y,
+    SUP_A_HIT_SCALE_X, SUP_A_HIT_SCALE_Y, SUP_B_HIT_SCALE_X, SUP_B_HIT_SCALE_Y, SUP_C_HIT_SCALE_X, SUP_C_HIT_SCALE_Y, SUP_D_HIT_SCALE_X, SUP_D_HIT_SCALE_Y,
+    HOOLI_HIT_SCALE_X, HOOLI_HIT_SCALE_Y,
+    PROJECTILE_FONT_SIZE, BOSS_PROJECTILE_TYPE, GENERIC_BOSS_ANIM_KEYS, SIMPLE_ANIM_BOSSES, bossDownMap, BOSS_NAMES
+} from './js/config.js';
+import { assets, preloadCore, loadLevelAssets } from './js/assets.js';
 
-// Per-level muziek (nu allemaal dezelfde file; later makkelijk per level aan te passen)
-const LEVEL_MUSIC_URL = {
-    1: LEVEL_START_AUDIO_URL,
-    2: LEVEL_START_AUDIO_URL,
-    3: LEVEL_START_AUDIO_URL,
-    4: LEVEL_START_AUDIO_URL,
-    5: LEVEL_START_AUDIO_URL,
-    6: LEVEL_START_AUDIO_URL,
-    7: LEVEL_START_AUDIO_URL,
-    8: LEVEL_START_AUDIO_URL,
-    9: LEVEL_START_AUDIO_URL,
-    10: LEVEL_START_AUDIO_URL
-};
-const SILENT_AUDIO_URL = 'audio/500-milliseconds-of-silence.mp3';
-const UNLOCK_CODE_HASH = 'c2ec7d135a87450d338a774a9714488e29da62ef7e717ad01c4dd97b2d8ed45a';
-const SOUND_EAGLE_URL = 'assets/soundeffects/eagle.mp3';
-const SOUND_POOP_URL = 'assets/soundeffects/schijt1.mp3';
-const SOUND_BOM_URL = 'assets/soundeffects/bom.mp3';
-const SOUND_SPRAY_URL = 'assets/soundeffects/spray.mp3';
+(() => {
 
-// Volume 0–1: standaard en opslagkeys (gebruiker kan instellen via Instellingen)
-const DEFAULT_VOLUME_MUSIC = 0.16;
-const DEFAULT_VOLUME_SFX = 0.41;
-const VOLUME_STORAGE_KEY_MUSIC = 'harley_vol_music';
-const VOLUME_STORAGE_KEY_SFX = 'harley_vol_sfx';
-function getStoredVolume(key, def) {
-    try {
-        const v = parseFloat(localStorage.getItem(key));
-        if (!Number.isNaN(v)) return Math.max(0, Math.min(1, v));
-    } catch (e) {}
-    return def;
-}
 let musicVolume = getStoredVolume(VOLUME_STORAGE_KEY_MUSIC, DEFAULT_VOLUME_MUSIC);
 let sfxVolume = getStoredVolume(VOLUME_STORAGE_KEY_SFX, DEFAULT_VOLUME_SFX);
-
-const VIRTUAL_HEIGHT = 1080;
-const VIRTUAL_WIDTH = 1920;
-// Performance: max canvasresolutie op mobiel (minder pixels = minder lag)
-const MOBILE_MAX_CANVAS_WIDTH = 1280;
-const MOBILE_MAX_CANVAS_HEIGHT = 720;
-// Pixelratio max 2 (geen 3x op Retina) voor betere performance
-const MAX_DEVICE_PIXEL_RATIO = 2;
-const POINTS_TO_BOSS = 2500;
-const BASE_WORLD_SPEED = 6;
-const HIGH_SCORE_KEY = 'harley_high_score';
-
-const UNLOCK_ALL_LEVELS_KEY = 'harley_unlock_all_levels';
-
-function isDebugEnabled() {
-    try {
-        return localStorage.getItem(UNLOCK_ALL_LEVELS_KEY) === '1';
-    } catch (e) {
-        return false;
-    }
-}
 
 // --- GoatCounter analytics helpers ---
 function trackEvent(path, title, vars) {
@@ -208,498 +174,6 @@ const weaponButtons = {
     'POEPBOM': document.getElementById('btn-POEPBOM')
 };
 
-const SNACKS = [
-    { name: 'PATAT', weapon: 'POEPBOM', icon: '🍟', type: 'WEAPON' },
-    { name: 'HAMBURGER', weapon: 'DIARREE', icon: '🍔', type: 'WEAPON' },
-    { name: 'BIER', icon: '🍺', type: 'HEAL_SMALL' },
-    { name: 'PIL', icon: '💊', type: 'HEAL_FULL' }
-];
-
-const levelBossConfig = {
-    1: ['boss0'],
-    2: ['boss1'],
-    3: ['boss2'],
-    4: ['boss3'],
-    5: ['boss4'],
-    6: ['boss6', 'boss6', 'boss6'],   // ME – 3x verdeeld over het scherm, gooit stok
-    7: ['boss5'],
-    8: ['boss7'],                     // nieuwe eindbaas level 8 (Refs)
-    9: ['boss8'],                     // Super Hooligan – eindbaas level 9
-    10: ['boss9']                     // Eindeindbaas – laatste eindbaas level 10
-};
-
-// --- Snelheid-instellingen (makkelijk aanpasbaar) ---
-// Normale supporters (A, B, C en D)
-const SUP_NORMAL_BASE_SPEED = 8;      // basissnelheid
-const SUP_NORMAL_SPEED_RANGE = 4;     // extra random snelheid (0..range)
-const SUP_A_SPEED_MULT = 0.8;         // factor voor supporter A (variant 1)
-const SUP_B_SPEED_MULT = 0.79;        // factor voor supporter B (variant 2)
-const SUP_C_SPEED_MULT = 0.8;         // factor voor supporter C (variant 3)
-const SUP_D_SPEED_MULT = 1.25;        // factor voor supporter D (variant 4) – iets sneller
-
-// Hooligans
-const HOOLIGAN_BASE_SPEED = 4;        // basissnelheid
-const HOOLIGAN_SPEED_RANGE = 2;       // extra random snelheid (0..range)
-const HOOLIGAN_SPEEDMULT_MIN = 0.65;  // minimale individuele multiplier
-const HOOLIGAN_SPEEDMULT_MAX = 1.35;  // maximale individuele multiplier
-const HOOLIGAN_VX_WORLD_OFFSET = 6;   // extra t.o.v. BASE_WORLD_SPEED voor vx
-
-// Eindbazen: per type alle instellingen op één plek (hoogte, grootte, snelheid, down-pose, projectielen, etc.)
-// downScale = schaal down-afbeelding. downOffset / offset = verticale verschuiving down/staand.
-// throwCount = aantal projectielen per worp. throwTimeToTarget = frames tot projectiel de adelaar bereikt (hoger = langzamer).
-// throwHitChance = kans 0–1 dat een worp de adelaar raakt (anders mis). throwDamage = schade aan adelaar bij treffer.
-const BOSS_CONFIG = {
-    boss0: { width: 300, height: 350, scale: 1.8, speed: 2.5, downScale: 0.8,    downOffset: 0, offset: 25, mirrorFlip: true,  throwCount: 1, throwTimeToTarget: 80, throwHitChance: 0.5, throwDamage: 2 },
-    boss1: { width: 375, height: 450, scale: 1.3,   speed: 2.5, downScale: 1,      downOffset: 0, offset: 0,  mirrorFlip: true,  throwCount: 6, throwTimeToTarget: 100, throwHitChance: 0.3, throwDamage: 1 },
-    boss2: { width: 300, height: 400, scale: 1.4, speed: 2.5, downScale: 0.7,    downOffset: 0, offset: 0,  mirrorFlip: true,  throwCount: 2, throwTimeToTarget: 60,  throwHitChance: 0.7, throwDamage: 6 },
-    boss3: { width: 350, height: 350, scale: 1.4, speed: 2.5, downScale: 0.7,    downOffset: 0, offset: 0,  mirrorFlip: true,  throwCount: 1, throwTimeToTarget: 50,  throwHitChance: 0.8, throwDamage: 6 },
-    boss4: { width: 260, height: 420, scale: 1.4, speed: 2.5, downScale: 0.75,   downOffset: 0, offset: 0,  mirrorFlip: true, throwCount: 2, throwTimeToTarget: 55,  throwHitChance: 0.7, throwDamage: 7 }, // Peperbus
-    boss5: { width: 250, height: 350, scale: 1.6, speed: 2.5, downScale: 0.8,    downOffset: 0, offset: 0,  mirrorFlip: true, throwCount: 1, throwTimeToTarget: 50,  throwHitChance: 0.8, throwDamage: 8 }, // Dominguez
-    boss6: { width: 275, height: 380, scale: 1.2, speed: 2.5, downScale: 0.8,    downOffset: 0, offset: 0,  mirrorFlip: true, throwCount: 1, throwTimeToTarget: 50,  throwHitChance: 0.65, throwDamage: 5 }, // ME – gooit stok
-    boss7: { width: 320, height: 380, scale: 1.5, speed: 2.5, downScale: 0.85,   downOffset: 0, offset: 0,  mirrorFlip: true, throwCount: 4, throwTimeToTarget: 60,  throwHitChance: 0.7, throwDamage: 6 },  // Refs – eindbaas level 8 (gooit 4 diamonds)
-    boss8: { width: 320, height: 400, scale: 1.5, speed: 2.5, downScale: 0.85,   downOffset: 0, offset: 0,  mirrorFlip: true, throwCount: 1, throwTimeToTarget: 55,  throwHitChance: 0.75, throwDamage: 7 },  // Super Hooligan – eindbaas level 9 (gooit fakkel)
-    boss9: { width: 360, height: 420, scale: 1.5, speed: 2.5, downScale: 0.85,   downOffset: 0, offset: 0,  mirrorFlip: false, throwCount: 3, throwTimeToTarget: 65,  throwHitChance: 0.8,  throwDamage: 8 }   // Eindeindbaas – laatste eindbaas level 10
-};
-function getBossConfig(type) {
-    return BOSS_CONFIG[type] || { width: 250, height: 350, scale: 1, speed: 2.5, downScale: 1, downOffset: 0, offset: 0, mirrorFlip: false, throwCount: 1, throwTimeToTarget: 50, throwHitChance: 0.7, throwDamage: 6 };
-}
-
-// --- Spawn-verhoudingen (makkelijk aanpasbaar) ---
-// Normaal vs hooligan: L1 = 80% normaal / 20% hooligan; hoger level = meer hooligans
-const HOOLIGAN_CHANCE_LEVEL1 = 0.2;   // kans hooligan op level 1 (0.2 = 20% hooligan, 80% normaal)
-const HOOLIGAN_CHANCE_MAX = 0.85;     // max kans hooligan op hogere levels
-// Verhouding onder normale supporters: gewichten A : B : C : D
-const SUP_A_SPAWN_WEIGHT = 25;
-const SUP_B_SPAWN_WEIGHT = 25;
-const SUP_C_SPAWN_WEIGHT = 25;
-const SUP_D_SPAWN_WEIGHT = 25;
-
-const LEVEL_BG_KEYS = { 1: 'bg_level1', 2: 'bg_level2', 3: 'bg_level3', 4: 'bg_level4', 5: 'bg_level5', 6: 'bg_level5', 7: 'bg_level4', 8: 'bg_level3', 9: 'bg_level2', 10: 'bg_level1' };
-
-// Per level: true = endless scrolling, false = scroll stopt aan het einde (adelaar kan wel terug naar links)
-// Level 7–9: bounded, rechts→links. Level 10: endless, rechts→links (infinite)
-const LEVEL_ENDLESS_SCROLL = { 1: true, 2: true, 3: false, 4: false, 5: true, 6: false, 7: false, 8: false, 9: false, 10: true };
-
-// Start rechts en scroll naar links (bounded: 6,7,8,9; endless level 10 gebruikt LEVEL_ENDLESS_SCROLL_LEFT)
-const LEVEL_SCROLL_START_RIGHT = { 6: true, 7: true, 8: true, 9: true, 10: true };
-// Endless levels die naar links scrollen (worldStep daalt, start rechts)
-const LEVEL_ENDLESS_SCROLL_LEFT = { 10: true };
-// Wachttijd (ms) tussen scroll-richting omdraaien; level 6 = kort
-const LEVEL_SCROLL_WAIT_MS = { 6: 1000 };
-const DEFAULT_SCROLL_WAIT_MS = 2200;
-
-const assets = {
-    background: { src: BACKGROUND_URL, canvas: document.createElement('canvas'), loaded: false, label: 'Achtergrond' },
-    bg_level1: { src: 'assets/bg_level1.png', canvas: document.createElement('canvas'), loaded: false, label: 'Achtergrond level 1' },
-    bg_level2: { src: 'assets/bg_level2.png', canvas: document.createElement('canvas'), loaded: false, label: 'Achtergrond level 2' },
-    bg_level3: { src: 'assets/bg_level3.png', canvas: document.createElement('canvas'), loaded: false, label: 'Achtergrond level 3' },
-    bg_level4: { src: 'assets/bg_level4.png', canvas: document.createElement('canvas'), loaded: false, label: 'Achtergrond level 4' },
-    bg_level5: { src: 'assets/bg_level5.png', canvas: document.createElement('canvas'), loaded: false, label: 'Achtergrond level 5' },
-    eagleIntro: { src: 'assets/eagle-intro.png', canvas: document.createElement('canvas'), loaded: false, label: 'Intro Adelaar' },
-    eagle: { src: 'assets/eagle.png', canvas: document.createElement('canvas'), loaded: false, label: 'Adelaar' },
-    eagleAnim1: { src: 'assets/eagle_animatie_1.png', canvas: document.createElement('canvas'), loaded: false, label: 'Adelaar anim 1' },
-    eagleAnim2: { src: 'assets/eagle_animatie_2.png', canvas: document.createElement('canvas'), loaded: false, label: 'Adelaar anim 2' },
-    eagleAnim3: { src: 'assets/eagle_animatie_3.png', canvas: document.createElement('canvas'), loaded: false, label: 'Adelaar anim 3' },
-    eagleAnim4: { src: 'assets/eagle_animatie_4.png', canvas: document.createElement('canvas'), loaded: false, label: 'Adelaar anim 4' },
-    supA1: { src: 'assets/supA/supA-1.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter A run 1' },
-    supA2: { src: 'assets/supA/supA-2.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter A run 2' },
-    supA3: { src: 'assets/supA/supA-3.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter A run 3' },
-    supA4: { src: 'assets/supA/supA-4.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter A run 4' },
-    supA5: { src: 'assets/supA/supA-5.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter A run 5' },
-    supA6: { src: 'assets/supA/supA-6.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter A run 6' },
-    supA7: { src: 'assets/supA/supA-7.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter A run 7' },
-    supA8: { src: 'assets/supA/supA-8.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter A run 8' },
-    supA9: { src: 'assets/supA/supA-9.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter A run 9' },
-    supA10: { src: 'assets/supA/supA-10.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter A run 10' },
-    supA11: { src: 'assets/supA/supA-11.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter A run 11' },
-    supA12: { src: 'assets/supA/supA-12.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter A run 12' },
-    supA13: { src: 'assets/supA/supA-13.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter A run 13' },
-    supA14: { src: 'assets/supA/supA-14.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter A run 14' },
-    supA15: { src: 'assets/supA/supA-15.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter A run 15' },
-    supA16: { src: 'assets/supA/supA-16.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter A run 16' },
-    supA17: { src: 'assets/supA/supA-17.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter A run 17' },
-    supA18: { src: 'assets/supA/supA-18.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter A run 18' },
-    supA19: { src: 'assets/supA/supA-19.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter A run 19' },
-    supA20: { src: 'assets/supA/supA-20.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter A run 20' },
-    supA21: { src: 'assets/supA/supA-21.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter A run 21' },
-    supA22: { src: 'assets/supA/supA-22.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter A run 22' },
-    supA23: { src: 'assets/supA/supA-23.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter A run 23' },
-    supA24: { src: 'assets/supA/supA-24.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter A run 24' },
-    supA25: { src: 'assets/supA/supA-25.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter A run 25' },
-    supA26: { src: 'assets/supA/supA-26.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter A run 26' },
-    supA27: { src: 'assets/supA/supA-27.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter A run 27' },
-    supA28: { src: 'assets/supA/supA-28.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter A run 28' },
-    supA29: { src: 'assets/supA/supA-29.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter A run 29' },
-    supA30: { src: 'assets/supA/supA-30.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter A run 30' },
-    supA31: { src: 'assets/supA/supA-31.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter A run 31' },
-    supA32: { src: 'assets/supA/supA-32.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter A run 32' },
-    supA33: { src: 'assets/supA/supA-33.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter A run 33' },
-    supA34: { src: 'assets/supA/supA-34.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter A run 34' },
-    supA35: { src: 'assets/supA/supA-35.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter A run 35' },
-    supA36: { src: 'assets/supA/supA-36.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter A run 36' },
-    supA37: { src: 'assets/supA/supA-37.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter A run 37' },
-    supA38: { src: 'assets/supA/supA-38.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter A run 38' },
-    supA39: { src: 'assets/supA/supA-39.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter A run 39' },
-    supA40: { src: 'assets/supA/supA-40.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter A run 40' },
-    supA41: { src: 'assets/supA/supA-41.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter A run 41' },
-    supA42: { src: 'assets/supA/supA-42.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter A run 42' },
-    supA43: { src: 'assets/supA/supA-43.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter A run 43' },
-    supA44: { src: 'assets/supA/supA-44.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter A run 44' },
-    supA45: { src: 'assets/supA/supA-45.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter A run 45' },
-    supA46: { src: 'assets/supA/supA-46.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter A run 46' },
-    supA47: { src: 'assets/supA/supA-47.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter A run 47' },
-    supA48: { src: 'assets/supA/supA-48.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter A run 48' },
-    supA49: { src: 'assets/supA/supA-49.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter A run 49' },
-    supA50: { src: 'assets/supA/supA-50.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter A run 50' },
-    supA51: { src: 'assets/supA/supA-51.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter A run 51' },
-    supA52: { src: 'assets/supA/supA-52.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter A run 52' },
-    supA53: { src: 'assets/supA/supA-53.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter A run 53' },
-    supA54: { src: 'assets/supA/supA-54.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter A run 54' },
-    supA55: { src: 'assets/supA/supA-55.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter A run 55' },
-    supA56: { src: 'assets/supA/supA-56.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter A run 56' },
-    supA57: { src: 'assets/supA/supA-57.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter A run 57' },
-    supA58: { src: 'assets/supA/supA-58.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter A run 58' },
-    supA59: { src: 'assets/supA/supA-59.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter A run 59' },
-    supA60: { src: 'assets/supA/supA-60.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter A run 60' },
-    supA61: { src: 'assets/supA/supA-61.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter A run 61' },
-    supA62: { src: 'assets/supA/supA-62.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter A run 62' },
-    supA63: { src: 'assets/supA/supA-63.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter A run 63' },
-    supA64: { src: 'assets/supA/supA-64.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter A run 64' },
-    supA65: { src: 'assets/supA/supA-65.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter A run 65' },
-    supA66: { src: 'assets/supA/supA-66.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter A run 66' },
-    supA67: { src: 'assets/supA/supA-67.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter A run 67' },
-    supA68: { src: 'assets/supA/supA-68.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter A run 68' },
-    supA69: { src: 'assets/supA/supA-69.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter A run 69' },
-    supA70: { src: 'assets/supA/supA-70.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter A run 70' },
-    supA71: { src: 'assets/supA/supA-71.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter A run 71' },
-    supA72: { src: 'assets/supA/supA-72.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter A run 72' },
-    ...Object.fromEntries([1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28].map(n => ['supB' + n, { src: encodeURI('assets/supB/clideo_editor_f51fd73e3cfa47e690fefe457e5e8273-' + n + ' (gesleept).png'), canvas: document.createElement('canvas'), loaded: false, label: 'Supporter B run ' + n }])),
-    supBDown: { src: 'assets/supB/supBdown.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter B geraakt' },
-    ...Object.fromEntries([1,2,3,4,5,6,7,8,9,10].map(n => ['supC' + n, { src: encodeURI('assets/supC/Persoon_rent_en_is_volledig_in_beeld_zoom_o-' + n + ' (gesleept).png'), canvas: document.createElement('canvas'), loaded: false, label: 'Supporter C run ' + n }])),
-    supCDown: { src: 'assets/supC/supC_down.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter C geraakt' },
-    normalHit: { src: 'assets/pecsup1lig_1.png', canvas: document.createElement('canvas'), loaded: false, label: 'Geraakt 1' },
-    groen1: { src: 'assets/supD/groen-1 (gesleept).png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter D run 1' },
-    groen2: { src: 'assets/supD/groen-2 (gesleept).png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter D run 2' },
-    groen3: { src: 'assets/supD/groen-3 (gesleept).png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter D run 3' },
-    groen4: { src: 'assets/supD/groen-4 (gesleept).png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter D run 4' },
-    groen5: { src: 'assets/supD/groen-5 (gesleept).png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter D run 5' },
-    groen6: { src: 'assets/supD/groen-6 (gesleept).png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter D run 6' },
-    groen7: { src: 'assets/supD/groen-7 (gesleept).png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter D run 7' },
-    groen8: { src: 'assets/supD/groen-8 (gesleept).png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter D run 8' },
-    groen9: { src: 'assets/supD/groen-9 (gesleept).png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter D run 9' },
-    supDDown: { src: 'assets/supD/groen_down.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter D geraakt' },
-
-    // Hooligan: assets/hooligan — ren hooli1–5, gooi hooli1gooit–hooli6gooit
-    hooliRun1: { src: 'assets/hooligan/hooli1.png', canvas: document.createElement('canvas'), loaded: false, label: 'Hooligan run 1' },
-    hooliRun2: { src: 'assets/hooligan/hooli2.png', canvas: document.createElement('canvas'), loaded: false, label: 'Hooligan run 2' },
-    hooliRun3: { src: 'assets/hooligan/hooli3.png', canvas: document.createElement('canvas'), loaded: false, label: 'Hooligan run 3' },
-    hooliRun4: { src: 'assets/hooligan/hooli4.png', canvas: document.createElement('canvas'), loaded: false, label: 'Hooligan run 4' },
-    hooliRun5: { src: 'assets/hooligan/hooli5.png', canvas: document.createElement('canvas'), loaded: false, label: 'Hooligan run 5' },
-    hooliThrow1: { src: 'assets/hooligan/hooli1gooit.png', canvas: document.createElement('canvas'), loaded: false, label: 'Hooligan gooit 1' },
-    hooliThrow2: { src: 'assets/hooligan/hooli2gooit.png', canvas: document.createElement('canvas'), loaded: false, label: 'Hooligan gooit 2' },
-    hooliThrow3: { src: 'assets/hooligan/hooli3gooit.png', canvas: document.createElement('canvas'), loaded: false, label: 'Hooligan gooit 3' },
-    hooliThrow4: { src: 'assets/hooligan/hooli4gooit.png', canvas: document.createElement('canvas'), loaded: false, label: 'Hooligan gooit 4' },
-    hooliThrow5: { src: 'assets/hooligan/hooli5gooit.png', canvas: document.createElement('canvas'), loaded: false, label: 'Hooligan gooit 5' },
-    hooliThrow6: { src: 'assets/hooligan/hooli6gooit.png', canvas: document.createElement('canvas'), loaded: false, label: 'Hooligan gooit 6' },
-    hooliHit:   { src: 'assets/hc_sup_down.png', canvas: document.createElement('canvas'), loaded: false, label: 'Geraakt Hooli' },
-
-    boss0: { src: encodeURI('assets/clown/clownloopt/clownog-58 (gesleept).png'), canvas: document.createElement('canvas'), loaded: false, name: "Clown", label: 'Boss 0 (Clown)' },
-    ...Object.fromEntries([58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80].map(n => ['clownLoop' + n, { src: encodeURI(`assets/clown/clownloopt/clownog-${n} (gesleept).png`), canvas: document.createElement('canvas'), loaded: false, label: 'Clown loop ' + n }])),
-    ...Object.fromEntries([19,20,21,22,23,24,25,26,27,31,32,33,34,40,55,56,57].map(n => ['clownThrow' + n, { src: encodeURI(`assets/clown/clowngooit/clownog-${n} (gesleept).png`), canvas: document.createElement('canvas'), loaded: false, label: 'Clown gooit ' + n }])),
-    ...Object.fromEntries([2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,27,31,32,33,34,35,36,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,56,58].map(n => ['clownDown' + n, { src: encodeURI(`assets/clown/clowndown/ezgif-189454d3ff861def-${n} (gesleept).png`), canvas: document.createElement('canvas'), loaded: false, label: 'Clown down ' + n }])),
-    clownDown1: { src: encodeURI('assets/clown/clowndown/ezgif-189454d3ff861def-1 (gesleept).png'), canvas: document.createElement('canvas'), loaded: false, label: 'Clown down 1' },
-    ...Object.fromEntries([1,2,3,4,5,6,7,8,9,10,11,12].map(n => ['zwolfRun' + n, { src: encodeURI(`assets/zwolfje/rennen/Laat_hem_bakstenen_omhoog_gooien (1)-${n} (gesleept).png`), canvas: document.createElement('canvas'), loaded: false, label: 'Zwolfje ren ' + n }])),
-    ...Object.fromEntries([1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19].map(n => ['zwolfThrow' + n, { src: encodeURI(`assets/zwolfje/gooien/Laat_hem_bakstenen_omhoog_gooien-${n} (gesleept).png`), canvas: document.createElement('canvas'), loaded: false, label: 'Zwolfje gooit ' + n }])),
-    ...Object.fromEntries([1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33].map(n => ['zwolfDown' + n, { src: encodeURI(`assets/zwolfje/down/Hij_wordt_geraakt_door_vogelpoep_valt_op_de-${n} (gesleept).png`), canvas: document.createElement('canvas'), loaded: false, label: 'Zwolfje down ' + n }])),
-
-    // Diederik (boer) – nieuwe animaties in assets/boer/loopt en assets/boer/gooit
-    ...Object.fromEntries([1,2,3,4,5,6,7,8,9,10,11,12].map(n => [
-        'boerRun' + n,
-        {
-            src: encodeURI(`assets/boer/loopt/boer gif-${n} (gesleept).png`),
-            canvas: document.createElement('canvas'),
-            loaded: false,
-            label: 'Diederik loopt ' + n
-        }
-    ])),
-    ...Object.fromEntries([1,2,3,4,5,6,7,8,9,10,11,12,13,14].map(n => [
-        'boerThrow' + n,
-        {
-            src: encodeURI(`assets/boer/gooit/boer gif-${n} (gesleept).png`),
-            canvas: document.createElement('canvas'),
-            loaded: false,
-            label: 'Diederik gooit ' + n
-        }
-    ])),
-    // Fallback / eerste frames voor eventueel bestaand gebruik (Diederik)
-    boss2: { src: encodeURI('assets/boer/loopt/boer gif-1 (gesleept).png'), canvas: document.createElement('canvas'), loaded: false, name: "Diederik", label: 'Boss 2' },
-    boss2Throw: { src: encodeURI('assets/boer/gooit/boer gif-1 (gesleept).png'), canvas: document.createElement('canvas'), loaded: false, label: 'Boss 2 Gooit' },
-    boss2Down: { src: encodeURI('assets/boer/down/boer down.png'), canvas: document.createElement('canvas'), loaded: false, label: 'Boss 2 Down' },
-
-    // Bram – nieuwe animaties in assets/bram/rennen en assets/bram/schieten
-    ...Object.fromEntries([1,2,3,4,5,6,7,8].map(n => [
-        'bramRun' + n,
-        {
-            src: encodeURI(`assets/bram/rennen/bram gif basis-${n} (gesleept).png`),
-            canvas: document.createElement('canvas'),
-            loaded: false,
-            label: 'Bram rent ' + n
-        }
-    ])),
-    ...Object.fromEntries([1,2,3,4,5,6,7,8,9,10,11,12,13,14].map(n => [
-        'bramShoot' + n,
-        {
-            src: encodeURI(`assets/bram/schieten/bram gif basis-${n} (gesleept).png`),
-            canvas: document.createElement('canvas'),
-            loaded: false,
-            label: 'Bram schiet ' + n
-        }
-    ])),
-    boss3Down: { src: encodeURI('assets/bram/down/bram down.png'), canvas: document.createElement('canvas'), loaded: false, label: 'Boss 3 Down' },
-
-    // Peperbus – nieuwe eindbaas (boss4) in assets/peperbus
-    ...Object.fromEntries([1,2,3,4,5,6,7,8,9,10,11,12].map(n => [
-        'peperRun' + n,
-        {
-            src: encodeURI(`assets/peperbus/lopen/ezgif-6450bd01d3ccea36-${n} (gesleept).png`),
-            canvas: document.createElement('canvas'),
-            loaded: false,
-            label: 'Peperbus loopt ' + n
-        }
-    ])),
-    ...Object.fromEntries([13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29].map(n => [
-        'peperThrow' + n,
-        {
-            src: encodeURI(`assets/peperbus/gooien/ezgif-6450bd01d3ccea36-${n} (gesleept).png`),
-            canvas: document.createElement('canvas'),
-            loaded: false,
-            label: 'Peperbus gooit ' + n
-        }
-    ])),
-    boss4Down: { src: encodeURI('assets/peperbus/down/peperbus down.png'), canvas: document.createElement('canvas'), loaded: false, label: 'Boss 4 Down' },
-
-    // Dominguez – nieuwe animaties in assets/dom/loopt, assets/dom/gooit, assets/dom/down
-    ...Object.fromEntries([1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22].map(n => [
-        'domRun' + n,
-        {
-            src: encodeURI(`assets/dom/loopt/dom gif-${n} (gesleept).png`),
-            canvas: document.createElement('canvas'),
-            loaded: false,
-            label: 'Dominguez loopt ' + n
-        }
-    ])),
-    ...Object.fromEntries([1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17].map(n => [
-        'domThrow' + n,
-        {
-            src: encodeURI(`assets/dom/gooit/dom gif-${n} (gesleept).png`),
-            canvas: document.createElement('canvas'),
-            loaded: false,
-            label: 'Dominguez gooit ' + n
-        }
-    ])),
-    boss5: { src: encodeURI('assets/dom/loopt/dom gif-1 (gesleept).png'), canvas: document.createElement('canvas'), loaded: false, name: "Dominguez", label: 'Boss 5' },
-    boss5Throw: { src: encodeURI('assets/dom/gooit/dom gif-1 (gesleept).png'), canvas: document.createElement('canvas'), loaded: false, label: 'Boss 5 Gooit' },
-    boss5Eat: { src: encodeURI('assets/dom/gooit/dom gif-10 (gesleept).png'), canvas: document.createElement('canvas'), loaded: false, label: 'Boss 5 Eet' },
-    boss5Down: { src: encodeURI('assets/dom/down/dom down.png'), canvas: document.createElement('canvas'), loaded: false, label: 'Boss 5 Down' },
-
-    // ME – eindbaas level 6, gooit stok (assets/ME/lopen, gooien, down)
-    ...Object.fromEntries([1,2,3,4,5,6,7,8,9,10].map(n => [
-        'meRun' + n,
-        { src: encodeURI(`assets/ME/lopen/ME basis gif-${n} (gesleept).png`), canvas: document.createElement('canvas'), loaded: false, label: 'ME loopt ' + n }
-    ])),
-    ...Object.fromEntries([1,2,3,4,5].map(n => [
-        'meThrow' + n,
-        { src: encodeURI(`assets/ME/gooien/ME basis gif-${n} (gesleept).png`), canvas: document.createElement('canvas'), loaded: false, label: 'ME gooit ' + n }
-    ])),
-    boss6Down: { src: encodeURI('assets/ME/down/ME down.png'), canvas: document.createElement('canvas'), loaded: false, label: 'Boss 6 Down' },
-
-    // Refs – nieuwe eindbaas level 8 (assets/refs/loopt, gooien, down)
-    ...Object.fromEntries([1,2,3,4,5,6,7,8,9,10,11,12,13,14].map(n => [
-        'refsRun' + n,
-        {
-            src: encodeURI(`assets/refs/loopt/Laat_ze_de_polonaise_lopen_naar_rechts_na_en-${n} (gesleept).png`),
-            canvas: document.createElement('canvas'),
-            loaded: false,
-            label: 'Refs loopt ' + n
-        }
-    ])),
-    ...Object.fromEntries([1,2,3,4,5,6,7].map(n => [
-        'refsThrow' + n,
-        {
-            src: encodeURI(`assets/refs/gooit/Laat_ze_de_polonaise_lopen_naar_rechts_na_en-${n} (gesleept).png`),
-            canvas: document.createElement('canvas'),
-            loaded: false,
-            label: 'Refs gooit ' + n
-        }
-    ])),
-    boss7Down: { src: encodeURI('assets/refs/down/refs down.png'), canvas: document.createElement('canvas'), loaded: false, label: 'Boss 7 Down' },
-
-    // Super Hooligan – eindbaas level 9 (assets/superhool/lopen, gooien, down)
-    ...Object.fromEntries([1,2,3,4,5,6,7,8,9].map(n => [
-        'superhoolRun' + n,
-        {
-            src: encodeURI(`assets/superhool/lopen/Laat_de_hooligan_boos_lopen_en_na_enkele_seco-${n} (gesleept).png`),
-            canvas: document.createElement('canvas'),
-            loaded: false,
-            label: 'Super Hooligan loopt ' + n
-        }
-    ])),
-    ...Object.fromEntries([1,2,3,4,5,6,7,8,9,10,11,12,13,14,15].map(n => [
-        'superhoolThrow' + n,
-        {
-            src: encodeURI(`assets/superhool/gooien/Laat_hem_de_fakkel_met_kracht_naar_boven_gooi-${n} (gesleept).png`),
-            canvas: document.createElement('canvas'),
-            loaded: false,
-            label: 'Super Hooligan gooit ' + n
-        }
-    ])),
-    boss8Down: { src: encodeURI('assets/superhool/down/superhool down.png'), canvas: document.createElement('canvas'), loaded: false, label: 'Boss 8 Down' },
-
-    // Eindeindbaas – laatste eindbaas level 10 (assets/eindeindbaas/lopen, gooien, down)
-    ...Object.fromEntries([1,2,3,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20].map(n => [
-        'eindeindRun' + n,
-        {
-            src: encodeURI(`assets/eindeindbaas/lopen/Laat_hem_naar_links_lopen_voor_5_seconden-${n} (gesleept).png`),
-            canvas: document.createElement('canvas'),
-            loaded: false,
-            label: 'Eindeindbaas loopt ' + n
-        }
-    ])),
-    ...Object.fromEntries([1,2,3,4,5,6,7,8,9,10,11,12].map(n => [
-        'eindeindThrow' + n,
-        {
-            src: encodeURI(`assets/eindeindbaas/gooien/Laat_het_game_karakter_boos_naar_links_lopen-${n} (gesleept).png`),
-            canvas: document.createElement('canvas'),
-            loaded: false,
-            label: 'Eindeindbaas gooit ' + n
-        }
-    ])),
-    boss9Down: { src: encodeURI('assets/eindeindbaas/down/eindeindbaas down.png'), canvas: document.createElement('canvas'), loaded: false, label: 'Boss 9 Down' }
-};
-
-const HOOLI_RUN_KEYS = ['hooliRun1', 'hooliRun2', 'hooliRun3', 'hooliRun4', 'hooliRun5'];
-const HOOLI_THROW_KEYS = ['hooliThrow1', 'hooliThrow2', 'hooliThrow3', 'hooliThrow4', 'hooliThrow5', 'hooliThrow6'];
-const CLOWN_LOOP_KEYS = [58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80].map(n => 'clownLoop' + n);
-const CLOWN_THROW_KEYS = [19,20,21,22,23,24,25,26,27,31,32,33,34,40,55,56,57].map(n => 'clownThrow' + n);
-const CLOWN_DOWN_KEYS = ['clownDown1'].concat([2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,27,31,32,33,34,35,36,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,56,58].map(n => 'clownDown' + n));
-const ZWOLF_RUN_KEYS = [1,2,3,4,5,6,7,8,9,10,11,12].map(n => 'zwolfRun' + n);
-const ZWOLF_THROW_KEYS = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19].map(n => 'zwolfThrow' + n);
-const ZWOLF_DOWN_KEYS = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33].map(n => 'zwolfDown' + n);
-const BOER_RUN_KEYS = [1,2,3,4,5,6,7,8,9,10,11,12].map(n => 'boerRun' + n);
-const BOER_THROW_KEYS = [1,2,3,4,5,6,7,8,9,10,11,12,13,14].map(n => 'boerThrow' + n);
-const DOM_RUN_KEYS = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22].map(n => 'domRun' + n);
-const DOM_THROW_KEYS = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17].map(n => 'domThrow' + n);
-const BRAM_RUN_KEYS = [1,2,3,4,5,6,7,8].map(n => 'bramRun' + n);
-const BRAM_SHOOT_KEYS = [1,2,3,4,5,6,7,8,9,10,11,12,13,14].map(n => 'bramShoot' + n);
-const PEPER_RUN_KEYS = [1,2,3,4,5,6,7,8,9,10,11,12].map(n => 'peperRun' + n);
-const PEPER_THROW_KEYS = [13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29].map(n => 'peperThrow' + n);
-const ME_RUN_KEYS = [1,2,3,4,5,6,7,8,9,10].map(n => 'meRun' + n);
-const ME_THROW_KEYS = [1,2,3,4,5].map(n => 'meThrow' + n);
-const REFS_RUN_KEYS = [1,2,3,4,5,6,7,8,9,10,11,12,13,14].map(n => 'refsRun' + n);
-const REFS_THROW_KEYS = [1,2,3,4,5,6,7].map(n => 'refsThrow' + n);
-const SUPERHOOL_RUN_KEYS = [1,2,3,4,5,6,7,8,9].map(n => 'superhoolRun' + n);
-const SUPERHOOL_THROW_KEYS = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15].map(n => 'superhoolThrow' + n);
-const EINDEIND_RUN_KEYS = [1,2,3,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20].map(n => 'eindeindRun' + n);
-const EINDEIND_THROW_KEYS = [1,2,3,4,5,6,7,8,9,10,11,12].map(n => 'eindeindThrow' + n);
-const SUP_ARENT_KEYS = Array.from({ length: 72 }, (_, i) => 'supA' + (i + 1));
-const SUP_B_KEYS = Array.from({ length: 28 }, (_, i) => 'supB' + (i + 1));
-const SUP_C_KEYS = Array.from({ length: 10 }, (_, i) => 'supC' + (i + 1));
-const SUP_D_KEYS = ['groen1', 'groen2', 'groen3', 'groen4', 'groen5', 'groen6', 'groen7', 'groen8', 'groen9'];
-
-// --- Grootte/schaal per type (1 = standaard, <1 kleiner, >1 groter) ---
-const SUP_A_SCALE_X = 4;
-const SUP_A_SCALE_Y = 1.9;
-const SUP_B_SCALE_X = 3.5;
-const SUP_B_SCALE_Y = 1.7;
-const SUP_C_SCALE_X = 3.6;
-const SUP_C_SCALE_Y = 1.8;
-const SUP_C_RUN_Y_OFFSET = 85;  // supC run-sprites hebben ruimte onderaan; offset zodat voeten op stoep staan
-const SUP_D_SCALE_X = 1.7;
-const SUP_D_SCALE_Y = 1.2; 
-const HOOLI_SCALE_X = 1.2;
-const HOOLI_SCALE_Y = 1.2;
-
-// --- Schaal geraakt-/down-afbeelding (aparte X,Y per type) ---
-const SUP_A_HIT_SCALE_X = 1.35;
-const SUP_A_HIT_SCALE_Y = 1.35;
-const SUP_B_HIT_SCALE_X = 2.1;
-const SUP_B_HIT_SCALE_Y = 1.35;
-const SUP_C_HIT_SCALE_X = 2.0;
-const SUP_C_HIT_SCALE_Y = 1.8;
-const SUP_D_HIT_SCALE_X = 1.7;
-const SUP_D_HIT_SCALE_Y = 1.2;
-const HOOLI_HIT_SCALE_X = 1.6;
-const HOOLI_HIT_SCALE_Y = 1.2;
-
-// Grootte (font-size in px) per projectieltype (beerGlasses)
-const PROJECTILE_FONT_SIZE = {
-    GLOVE: 56,
-    BALL: 40,
-    HAMBURGER: 52,
-    FRIES: 60,
-    BRICK: 44,
-    STONE: 28,
-    STICK: 36,
-    DIAMOND: 40,
-    TORCH: 44
-};
-
-// Projectieltype per eindbaas, i.p.v. geneste ternary
-const BOSS_PROJECTILE_TYPE = {
-    boss2: 'GLOVE',
-    boss3: 'BALL',
-    boss5: 'FRIES',
-    boss6: 'STICK',
-    boss7: 'DIAMOND',
-    boss8: 'TORCH',
-    boss9: 'FRIES',
-    boss1: 'BRICK',
-    boss4: 'BRICK'
-};
-
-// Generieke animatie-sleutels per eindbaas (run/throw/down)
-const GENERIC_BOSS_ANIM_KEYS = {
-    boss2: { run: BOER_RUN_KEYS, throw: BOER_THROW_KEYS, down: 'boss2Down' },
-    boss3: { run: BRAM_RUN_KEYS, throw: BRAM_SHOOT_KEYS, down: 'boss3Down' },
-    boss4: { run: PEPER_RUN_KEYS, throw: PEPER_THROW_KEYS, down: 'boss4Down' },
-    boss6: { run: ME_RUN_KEYS, throw: ME_THROW_KEYS, down: 'boss6Down' },
-    boss7: { run: REFS_RUN_KEYS, throw: REFS_THROW_KEYS, down: 'boss7Down' },
-    boss8: { run: SUPERHOOL_RUN_KEYS, throw: SUPERHOOL_THROW_KEYS, down: 'boss8Down' },
-    boss9: { run: EINDEIND_RUN_KEYS, throw: EINDEIND_THROW_KEYS, down: 'boss9Down' }
-};
-
-// Bazen met simpele animTime-update (geen aparte downAnimTime)
-const SIMPLE_ANIM_BOSSES = new Set(['boss2','boss3','boss4','boss5','boss6','boss7','boss8','boss9']);
-
-const bossDownMap = { boss0: 'clownDown1', boss1: 'zwolfDown1', boss2: 'boss2Down', boss3: 'boss3Down', boss4: 'boss4Down', boss5: 'boss5Down', boss6: 'boss6Down', boss7: 'boss7Down', boss8: 'boss8Down', boss9: 'boss9Down' };
-const BOSS_NAMES = { boss0: 'Clown', boss1: 'Zwolfje', boss2: 'Diederik', boss3: 'Bram', boss4: 'Peperbus', boss5: 'Dominguez', boss6: 'ME', boss7: 'Refs', boss8: 'Super Hooligan', boss9: 'Eindeindbaas' };
-
-// Level-specifieke assets: per level de bg + alle bazen van dat level
-const BOSS_ASSET_KEYS = {
-    boss0: ['boss0', ...CLOWN_LOOP_KEYS, ...CLOWN_THROW_KEYS, ...CLOWN_DOWN_KEYS],
-    boss1: [...ZWOLF_RUN_KEYS, ...ZWOLF_THROW_KEYS, ...ZWOLF_DOWN_KEYS],
-    boss2: [...BOER_RUN_KEYS, ...BOER_THROW_KEYS, 'boss2Down'],
-    boss3: [...BRAM_RUN_KEYS, ...BRAM_SHOOT_KEYS, 'boss3Down'],
-    boss4: [...PEPER_RUN_KEYS, ...PEPER_THROW_KEYS, 'boss4Down'],
-    boss5: [...DOM_RUN_KEYS, ...DOM_THROW_KEYS, 'boss5Eat', 'boss5Down'],
-    boss6: [...ME_RUN_KEYS, ...ME_THROW_KEYS, 'boss6Down'],
-    boss7: [...REFS_RUN_KEYS, ...REFS_THROW_KEYS, 'boss7Down'],
-    boss8: [...SUPERHOOL_RUN_KEYS, ...SUPERHOOL_THROW_KEYS, 'boss8Down'],
-    boss9: [...EINDEIND_RUN_KEYS, ...EINDEIND_THROW_KEYS, 'boss9Down']
-};
-
-function getLevelAssetKeys(level) {
-    const bgKey = LEVEL_BG_KEYS[level] || 'background';
-    const bossTypes = levelBossConfig[level] || ['boss0'];
-    const bossKeys = [...new Set(bossTypes.flatMap(t => BOSS_ASSET_KEYS[t] || []))];
-    return [bgKey, ...bossKeys];
-}
-
-const LEVEL_SPECIFIC_KEYS = new Set();
-for (let l = 1; l <= 10; l++) getLevelAssetKeys(l).forEach(k => LEVEL_SPECIFIC_KEYS.add(k));
-
-const CORE_ASSET_KEYS = Object.keys(assets).filter(k => !LEVEL_SPECIFIC_KEYS.has(k));
-
 function loadAsset(key, options = {}) {
     const { onProgress, totalForProgress, timeoutMs = 60000, silentFail = false } = options;
     const item = assets[key];
@@ -747,72 +221,13 @@ function loadAsset(key, options = {}) {
     });
 }
 
-async function loadAssets(keys, options = {}) {
-    const toLoad = keys.filter(k => assets[k] && !assets[k].loaded);
-    if (toLoad.length === 0) return;
-    const total = toLoad.length;
-    let done = 0;
-    const onProgress = (k, t) => {
-        done++;
-        if (options.updateLoadingBar && t != null) updateLoadingBar(done, t);
-        if (options.onLevelProgress) options.onLevelProgress(done, t);
-    };
-    const promises = toLoad.map(k => loadAsset(k, { ...options, onProgress, totalForProgress: total, timeoutMs: options.timeoutMs ?? 60000 }));
-    await Promise.all(promises);
-}
-
-async function preloadCore() {
-    const total = CORE_ASSET_KEYS.length;
-    try {
-        updateLoadingBar(0, total || 1);
-        await loadAssets(CORE_ASSET_KEYS, {
-            updateLoadingBar: true,
-            // Sneller falen en nooit oneindig wachten op 1 asset
-            timeoutMs: 20000,
-            silentFail: true
-        });
-    } catch (e) {
-        // Zorg dat een fout in preload niet de game blokkeert
-        console.error('Fout tijdens preloadCore:', e);
-    } finally {
-        const loadedCount = CORE_ASSET_KEYS.filter(k => assets[k] && assets[k].loaded).length;
-        updateLoadingBar(loadedCount, total || 1);
-        if (assets.background && assets.background.loaded) bgImg.src = assets.background.src;
-        if (els.loadingText) els.loadingText.style.display = 'none';
-        if (els.startBtn) els.startBtn.disabled = false;
-    }
-}
-
 function updateLevelLoadingProgress(level, current, total) {
     const pct = total ? Math.round((current / total) * 100) : 0;
     if (els.levelLoadingText) els.levelLoadingText.textContent = `Level ${level} laden... ${pct}%`;
     if (els.levelLoadingBar && total) els.levelLoadingBar.style.width = `${(current / total) * 100}%`;
 }
 
-async function loadLevelAssets(level) {
-    const keys = getLevelAssetKeys(level);
-    const toLoad = keys.filter(k => assets[k] && !assets[k].loaded);
-    if (toLoad.length === 0) return;
-    if (els.levelLoadingOverlay) {
-        els.levelLoadingOverlay.style.display = 'flex';
-        updateLevelLoadingProgress(level, 0, toLoad.length);
-    }
-    // Laad alleen assets die nog niet geladen zijn; level start pas na volledige resolve
-    await loadAssets(toLoad, {
-        timeoutMs: 30000,
-        silentFail: true,
-        onLevelProgress: (current, total) => updateLevelLoadingProgress(level, current, total)
-    });
-    // Zorg dat de balk visueel op 100% staat voordat het overlay verdwijnt
-    if (els.levelLoadingOverlay) {
-        updateLevelLoadingProgress(level, toLoad.length, toLoad.length);
-        els.levelLoadingOverlay.style.display = 'none';
-    }
-}
-
-async function preload() {
-    await preloadCore();
-}
+// preloadCore en loadLevelAssets komen nu uit js/assets.js
 
 function checkIOS() {
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
@@ -1975,7 +1390,11 @@ bind('start-btn', async () => {
     silentUnlockAudio.currentTime = 0;
     silentUnlockAudio.play().catch(() => {});
     await requestLandscape();
-    await loadLevelAssets(1);
+    await loadLevelAssets(1, {
+        els,
+        updateLevelProgress: updateLevelLoadingProgress,
+        addFailedAsset
+    });
     // iOS PWA: viewport kan na fullscreen nog wijzigen; forceer extra resize
     resize();
     setTimeout(resize, 300);
@@ -1987,7 +1406,11 @@ bind('start-btn', async () => {
 });
 bind('restart-btn', async () => { 
     score = 0; levelScoreStart = 0; currentLevel = 1; 
-    await loadLevelAssets(1); 
+    await loadLevelAssets(1, {
+        els,
+        updateLevelProgress: updateLevelLoadingProgress,
+        addFailedAsset
+    }); 
     resize();
     setTimeout(resize, 300);
     resetGame(); lastTime = 0; animationFrameId = requestAnimationFrame(gameLoop); 
@@ -1999,7 +1422,11 @@ bind('continue-btn', async () => {
     }
     currentLevel++; 
     levelScoreStart = score; 
-    await loadLevelAssets(currentLevel); 
+    await loadLevelAssets(currentLevel, {
+        els,
+        updateLevelProgress: updateLevelLoadingProgress,
+        addFailedAsset
+    }); 
     resize();
     setTimeout(resize, 300);
     resetGame(); lastTime = 0; animationFrameId = requestAnimationFrame(gameLoop); 
@@ -2040,7 +1467,11 @@ if (els.unlockCodeBtn) {
 
 async function startLevel(n) {
     if (!isDebugEnabled()) return;
-    await loadLevelAssets(n);
+    await loadLevelAssets(n, {
+        els,
+        updateLevelProgress: updateLevelLoadingProgress,
+        addFailedAsset
+    });
     currentLevel = n;
     levelScoreStart = (n - 1) * POINTS_TO_BOSS;
     score = levelScoreStart;
@@ -2052,7 +1483,11 @@ async function startLevel(n) {
 
 async function forceLevel(n) {
     if (!isDebugEnabled()) return;
-    await loadLevelAssets(n);
+    await loadLevelAssets(n, {
+        els,
+        updateLevelProgress: updateLevelLoadingProgress,
+        addFailedAsset
+    });
     currentLevel = n; 
     levelScoreStart = (n - 1) * POINTS_TO_BOSS;
     score = levelScoreStart + POINTS_TO_BOSS; 
@@ -2066,7 +1501,12 @@ async function forceLevel(n) {
 if (isDebugEnabled()) { window.forceLevel = forceLevel; window.startLevel = startLevel; }
 
 window.addEventListener('load', () => {
-    preload();
+    preloadCore({
+        updateLoadingBar: (current, total) => updateLoadingBar(current, total),
+        addFailedAsset,
+        els,
+        bgImg
+    });
     checkIOS();
     initDebugUI();
     initExternalLinks();
@@ -2091,33 +1531,31 @@ window.addEventListener('load', () => {
         if (els.sfxValue) els.sfxValue.textContent = Math.round(sfxVolume * 100) + '%';
     }
 
-    if (isDebugEnabled()) {
-        document.querySelectorAll('.debug-start-level-btn[data-level]').forEach((btn) => {
-            const handler = async (e) => {
-                e.preventDefault();
-                const lvl = Number(btn.getAttribute('data-level'));
-                if (Number.isFinite(lvl)) await startLevel(lvl);
-            };
-            btn.addEventListener('pointerdown', handler, { passive: false });
-            btn.addEventListener('click', (e) => { e.preventDefault(); if (Date.now() - lastTouchTs < 600) return; handler(e); });
+    // Altijd listeners op debugknoppen zetten; startLevel/forceLevel doen zelf isDebugEnabled()-check.
+    // Zo werken de knoppen ook als je ná laden de code invoert (panel wordt dan zichtbaar, listeners bestaan al).
+    document.querySelectorAll('.debug-start-level-btn[data-level]').forEach((btn) => {
+        const handler = async (e) => {
+            e.preventDefault();
+            if (!isDebugEnabled()) return;
+            const lvl = Number(btn.getAttribute('data-level'));
+            if (Number.isFinite(lvl)) await startLevel(lvl);
+        };
+        btn.addEventListener('pointerdown', handler, { passive: false });
+        btn.addEventListener('click', (e) => { e.preventDefault(); if (Date.now() - lastTouchTs < 600) return; handler(e); });
+    });
+    document.querySelectorAll('.debug-level-btn[data-level]').forEach((btn) => {
+        const handler = async (e) => {
+            e.preventDefault();
+            if (!isDebugEnabled()) return;
+            const lvl = Number(btn.getAttribute('data-level'));
+            if (Number.isFinite(lvl)) await forceLevel(lvl);
+        };
+        btn.addEventListener('pointerdown', handler, { passive: false });
+        btn.addEventListener('click', (e) => {
+            if (Date.now() - lastTouchTs < 600) return;
+            handler(e);
         });
-        document.querySelectorAll('.debug-level-btn[data-level]').forEach((btn) => {
-            const handler = async (e) => {
-                e.preventDefault();
-                const lvl = Number(btn.getAttribute('data-level'));
-                if (Number.isFinite(lvl)) await forceLevel(lvl);
-            };
-
-            // Pointer event (where supported)
-            btn.addEventListener('pointerdown', handler, { passive: false });
-
-            // Fallback / extra safety for browsers zonder Pointer Events
-            btn.addEventListener('click', (e) => {
-                if (Date.now() - lastTouchTs < 600) return;
-                handler(e);
-            });
-        });
-    }
+    });
 }, { once: true });
 window.addEventListener('resize', resize);
 window.addEventListener('orientationchange', () => {
