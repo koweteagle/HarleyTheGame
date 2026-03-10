@@ -750,8 +750,9 @@ async function loadLevelAssets(level) {
         els.levelLoadingOverlay.style.display = 'flex';
         updateLevelLoadingProgress(level, 0, toLoad.length);
     }
-    await loadAssets(keys, {
-        timeoutMs: 60000,
+    // Laad alleen assets die nog niet geladen zijn; level start pas na volledige resolve
+    await loadAssets(toLoad, {
+        timeoutMs: 30000,
         silentFail: true,
         onLevelProgress: (current, total) => updateLevelLoadingProgress(level, current, total)
     });
