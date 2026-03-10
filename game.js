@@ -715,6 +715,11 @@ function update(dt) {
         burstShotsLeft = BURST_SIZE;
         if (els.fireBtn) els.fireBtn.classList.remove('reloading');
     }
+    // Burst vult weer aan na BURST_RESET_MS zonder schot (zodat pips op knop weer vol lopen)
+    const now = Date.now();
+    if (reloadUntil <= 0 && lastShotTime > 0 && (now - lastShotTime) > BURST_RESET_MS) {
+        burstShotsLeft = BURST_SIZE;
+    }
     updateBurstUI();
     // Willekeurig adelaar-geluid
     eagleSoundTimer += (typeof dt === 'number' ? dt : 16);
