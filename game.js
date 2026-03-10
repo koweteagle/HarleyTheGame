@@ -226,11 +226,11 @@ const SUP_B_SPAWN_WEIGHT = 25;
 const SUP_C_SPAWN_WEIGHT = 25;
 const SUP_D_SPAWN_WEIGHT = 25;
 
-const LEVEL_BG_KEYS = { 1: 'bg_level1', 2: 'bg_level2', 3: 'bg_level3', 4: 'bg_level4', 5: 'bg_level5', 6: 'bg_level5', 7: 'bg_level4', 8: 'bg_level3', 9: 'bg_level2', 10: 'bg_level1', 11: 'background', 12: 'background' };
+const LEVEL_BG_KEYS = { 1: 'bg_level1', 2: 'bg_level2', 3: 'bg_level3', 4: 'bg_level4', 5: 'bg_level5', 6: 'bg_level5', 7: 'bg_level4', 8: 'bg_level3', 9: 'bg_level2', 10: 'bg_level1' };
 
 // Per level: true = endless scrolling, false = scroll stopt aan het einde (adelaar kan wel terug naar links)
 // Level 7–9: bounded, rechts→links. Level 10: endless, rechts→links (infinite)
-const LEVEL_ENDLESS_SCROLL = { 1: true, 2: true, 3: false, 4: false, 5: true, 6: false, 7: false, 8: false, 9: false, 10: true, 11: true, 12: true };
+const LEVEL_ENDLESS_SCROLL = { 1: true, 2: true, 3: false, 4: false, 5: true, 6: false, 7: false, 8: false, 9: false, 10: true };
 
 // Start rechts en scroll naar links (bounded: 6,7,8,9; endless level 10 gebruikt LEVEL_ENDLESS_SCROLL_LEFT)
 const LEVEL_SCROLL_START_RIGHT = { 6: true, 7: true, 8: true, 9: true, 10: true };
@@ -854,7 +854,20 @@ function showLevelUp() {
         img.className = 'boss-summary-img';
         container.appendChild(img);
     });
-    if (els.levelUpScreen) els.levelUpScreen.style.display = 'flex';
+    // Na level 10: spel uitgespeeld → direct eindscherm tonen, geen volgend level meer
+    const isLastLevel = currentLevel >= 10;
+    if (isLastLevel) {
+        if (els.levelUpScreen) els.levelUpScreen.style.display = 'none';
+        if (els.finalScore) els.finalScore.innerText = score;
+        const newHigh = setHighScore(score);
+        const highEl = document.getElementById('high-score-value');
+        if (highEl) highEl.innerText = newHigh;
+        const lineEl = document.getElementById('high-score-line');
+        if (lineEl) lineEl.style.display = 'block';
+        if (els.gameOverScreen) els.gameOverScreen.style.display = 'flex';
+    } else {
+        if (els.levelUpScreen) els.levelUpScreen.style.display = 'flex';
+    }
 }
 
 function resize() {
@@ -1908,6 +1921,10 @@ bind('restart-btn', async () => {
     resetGame(); lastTime = 0; animationFrameId = requestAnimationFrame(gameLoop); 
 });
 bind('continue-btn', async () => { 
+    // Na level 10 is het spel uitgespeeld: geen volgend level meer
+    if (currentLevel >= 10) {
+        return;
+    }
     currentLevel++; 
     levelScoreStart = score; 
     await loadLevelAssets(currentLevel); 
