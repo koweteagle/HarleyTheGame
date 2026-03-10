@@ -776,7 +776,11 @@ async function loadLevelAssets(level) {
         silentFail: true,
         onLevelProgress: (current, total) => updateLevelLoadingProgress(level, current, total)
     });
-    if (els.levelLoadingOverlay) els.levelLoadingOverlay.style.display = 'none';
+    // Zorg dat de balk visueel op 100% staat voordat het overlay verdwijnt
+    if (els.levelLoadingOverlay) {
+        updateLevelLoadingProgress(level, toLoad.length, toLoad.length);
+        els.levelLoadingOverlay.style.display = 'none';
+    }
 }
 
 async function preload() {
@@ -1908,9 +1912,15 @@ const bind = (id, fn) => {
 
 bind('start-btn', async () => { 
     if(gameActive) return; 
-    [levelAudio, winAudio, gameOverAudio, soundEagle, soundPoop, soundBom, soundSpray].forEach(a => { a.play().then(() => { a.pause(); a.currentTime = 0; }).catch(() => {}); });
+    // Audio-unlock: speel korte tik op effecten, maar niet de achtergrondmuziek zelf
+    [winAudio, gameOverAudio, soundEagle, soundPoop, soundBom, soundSpray].forEach(a => {
+        a.play().then(() => { a.pause(); a.currentTime = 0; }).catch(() => {});
+    });
     await requestLandscape();
     await loadLevelAssets(1);
+    // iOS PWA: viewport kan na fullscreen nog wijzigen; forceer extra resize
+    resize();
+    setTimeout(resize, 300);
     score = 0; levelScoreStart = 0; currentLevel = 1;
     if (els.startScreen) els.startScreen.style.display = 'none';
     resetGame();
@@ -1920,6 +1930,8 @@ bind('start-btn', async () => {
 bind('restart-btn', async () => { 
     score = 0; levelScoreStart = 0; currentLevel = 1; 
     await loadLevelAssets(1); 
+    resize();
+    setTimeout(resize, 300);
     resetGame(); lastTime = 0; animationFrameId = requestAnimationFrame(gameLoop); 
 });
 bind('continue-btn', async () => { 
@@ -1930,6 +1942,8 @@ bind('continue-btn', async () => {
     currentLevel++; 
     levelScoreStart = score; 
     await loadLevelAssets(currentLevel); 
+    resize();
+    setTimeout(resize, 300);
     resetGame(); lastTime = 0; animationFrameId = requestAnimationFrame(gameLoop); 
 });
 bind('fire-btn', () => executePoop('NORMAL'));
@@ -2033,6 +2047,13 @@ window.addEventListener('load', () => {
         });
     }
 }, { once: true });
-window.addEventListener('resize', resize); resize();
+window.addEventListener('resize', resize);
+window.addEventListener('orientationchange', () => {
+    setTimeout(resize, 300);
+});
+window.addEventListener('pageshow', () => {
+    setTimeout(resize, 100);
+});
+resize();
 
 })();
