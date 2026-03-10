@@ -597,6 +597,19 @@ const PROJECTILE_FONT_SIZE = {
     TORCH: 44
 };
 
+// Projectieltype per eindbaas, i.p.v. geneste ternary
+const BOSS_PROJECTILE_TYPE = {
+    boss2: 'GLOVE',
+    boss3: 'BALL',
+    boss5: 'FRIES',
+    boss6: 'STICK',
+    boss7: 'DIAMOND',
+    boss8: 'TORCH',
+    boss9: 'FRIES',
+    boss1: 'BRICK',
+    boss4: 'BRICK'
+};
+
 const bossDownMap = { boss0: 'clownDown1', boss1: 'zwolfDown1', boss2: 'boss2Down', boss3: 'boss3Down', boss4: 'boss4Down', boss5: 'boss5Down', boss6: 'boss6Down', boss7: 'boss7Down', boss8: 'boss8Down', boss9: 'boss9Down' };
 const BOSS_NAMES = { boss0: 'Clown', boss1: 'Zwolfje', boss2: 'Diederik', boss3: 'Bram', boss4: 'Peperbus', boss5: 'Dominguez', boss6: 'ME', boss7: 'Refs', boss8: 'Super Hooligan', boss9: 'Eindeindbaas' };
 
@@ -1339,23 +1352,7 @@ function update(dt) {
                 if (b.type === 'boss5' && Math.random() < 0.3) b.eatVisualTimer = 45;
                 else b.throwVisualTimer = 35;
 
-                let pt = b.type === 'boss2'
-                    ? 'GLOVE'
-                    : (b.type === 'boss3'
-                        ? 'BALL'
-                        : (b.type === 'boss5'
-                            ? 'FRIES'
-                            : (b.type === 'boss6'
-                                ? 'STICK'
-                                : (b.type === 'boss7'
-                                    ? 'DIAMOND'
-                                    : (b.type === 'boss8'
-                                        ? 'TORCH'
-                                        : (b.type === 'boss9'
-                                            ? 'FRIES'
-                                            : (b.type === 'boss1' || b.type === 'boss4'
-                                                ? 'BRICK'
-                                                : 'STONE')))))));
+                const pt = BOSS_PROJECTILE_TYPE[b.type] || 'STONE';
     
                 if (!b.eatVisualTimer || b.eatVisualTimer <= 0) {
                     const bc = getBossConfig(b.type);
