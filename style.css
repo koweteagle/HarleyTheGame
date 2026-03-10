@@ -66,6 +66,11 @@ canvas { display: block; image-rendering: pixelated; }
     -webkit-overflow-scrolling: touch;
 }
 
+/* Startscherm: content verticaal centreren */
+#start-screen {
+    justify-content: center;
+}
+
 /* iOS Specifieke Modal */
 #ios-modal {
     display: none; 
