@@ -966,12 +966,21 @@ function drawTinted(spriteCanvas, x, y, w, h, flash) {
     if(!spriteCanvas || !spriteCanvas.width) return;
     ctx.drawImage(spriteCanvas, x, y, w, h);
     if(flash > 0) {
-        ctx.save();
-        ctx.globalCompositeOperation = 'source-atop';
-        const alpha = Math.min(0.6, 0.2 + (flash / 40)); // nooit volledig rood vlak
-        ctx.fillStyle = `rgba(255, 0, 0, ${alpha})`;
-        ctx.fillRect(x, y, w, h);
-        ctx.restore();
+        // Gebruik een offscreen canvas als masker zodat alleen de niet-transparante
+        // pixels van de sprite rood oplichten, niet een volledig rechthoekig vlak.
+        // Optimalisatie t.o.v. de oude versie: alleen resizen als het nodig is.
+        if (spriteCanvas.width > tintCanvas.width || spriteCanvas.height > tintCanvas.height) {
+            tintCanvas.width = spriteCanvas.width;
+            tintCanvas.height = spriteCanvas.height;
+        }
+        tintCtx.clearRect(0, 0, tintCanvas.width, tintCanvas.height);
+        tintCtx.drawImage(spriteCanvas, 0, 0);
+        tintCtx.globalCompositeOperation = 'source-in';
+        const alpha = Math.min(0.6, 0.2 + (flash / 40));
+        tintCtx.fillStyle = `rgba(255, 0, 0, ${alpha})`;
+        tintCtx.fillRect(0, 0, tintCanvas.width, tintCanvas.height);
+        tintCtx.globalCompositeOperation = 'source-over';
+        ctx.drawImage(tintCanvas, x, y, w, h);
     }
 }
 
