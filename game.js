@@ -1485,9 +1485,16 @@ const bind = (id, fn) => {
 
 bind('start-btn', async () => { 
     if(gameActive) return; 
-    // Audio-unlock voor iOS: speel één keer stille clip (geen echte geluiden, werkt ook als volume=0 genegeerd wordt)
+    // Audio-unlock voor iOS: alle Audio-elementen in dezelfde user-gesture ontgrendelen (vóór elke await)
     silentUnlockAudio.currentTime = 0;
     silentUnlockAudio.play().catch(() => {});
+    levelAudio.play().catch(() => {}); levelAudio.pause(); levelAudio.currentTime = 0;
+    winAudio.play().catch(() => {}); winAudio.pause(); winAudio.currentTime = 0;
+    gameOverAudio.play().catch(() => {}); gameOverAudio.pause(); gameOverAudio.currentTime = 0;
+    soundEagle.play().catch(() => {}); soundEagle.pause(); soundEagle.currentTime = 0;
+    soundPoop.play().catch(() => {}); soundPoop.pause(); soundPoop.currentTime = 0;
+    soundBom.play().catch(() => {}); soundBom.pause(); soundBom.currentTime = 0;
+    soundSpray.play().catch(() => {}); soundSpray.pause(); soundSpray.currentTime = 0;
     await requestLandscape();
     await loadLevelAssets(1, {
         els,
